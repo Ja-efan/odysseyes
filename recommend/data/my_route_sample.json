@@ -1,0 +1,203 @@
+[
+    {
+        "properties": {
+            "totalDistance": "122377",
+            "totalTime": "8685",
+            "totalFare": "0",
+            "routeScore": 4.8100000000000005,
+            "totalScore": 2.42
+        },
+        "points": [
+            {
+                "pointId": "0",
+                "pointName": "출발",
+                "pointLatitude": 36.35909922,
+                "pointLongitude": 127.30196967
+            },
+            {
+                "pointId": "1",
+                "pointName": "높은댕이",
+                "pointLatitude": 36.31137637,
+                "pointLongitude": 126.9546965
+            },
+            {
+                "pointId": "2",
+                "pointName": "백제해장국",
+                "pointLatitude": 36.30095985,
+                "pointLongitude": 126.89492436
+            },
+            {
+                "pointId": "3",
+                "pointName": "백제문화단지",
+                "pointLatitude": 36.30662608,
+                "pointLongitude": 126.90670093
+            },
+            {
+                "pointId": "4",
+                "pointName": "도착",
+                "pointLatitude": 36.359102,
+                "pointLongitude": 127.30196967
+            }
+        ],
+        "paths": [
+            {
+                "pathId": "1",
+                "pathTime": "3284",
+                "pathDistance": "50754",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "2",
+                "pathTime": "1118",
+                "pathDistance": "9014",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "3",
+                "pathTime": "862",
+                "pathDistance": "6907",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "4",
+                "pathTime": "3421",
+                "pathDistance": "55702",
+                "pathFare": "0"
+            }
+        ]
+    },
+    {
+        "properties": {
+            "totalDistance": "125223",
+            "totalTime": "8465",
+            "totalFare": "0",
+            "routeScore": 4.640000000000001,
+            "totalScore": 2.33
+        },
+        "points": [
+            {
+                "pointId": "0",
+                "pointName": "출발",
+                "pointLatitude": 36.35909922,
+                "pointLongitude": 127.30196967
+            },
+            {
+                "pointId": "1",
+                "pointName": "무드빌리지",
+                "pointLatitude": 36.29285019,
+                "pointLongitude": 126.92453303
+            },
+            {
+                "pointId": "2",
+                "pointName": "연꽃이야기",
+                "pointLatitude": 36.2686582,
+                "pointLongitude": 126.90645196
+            },
+            {
+                "pointId": "3",
+                "pointName": "백제문화단지",
+                "pointLatitude": 36.30662608,
+                "pointLongitude": 126.90670093
+            },
+            {
+                "pointId": "4",
+                "pointName": "도착",
+                "pointLatitude": 36.359102,
+                "pointLongitude": 127.30196967
+            }
+        ],
+        "paths": [
+            {
+                "pathId": "1",
+                "pathTime": "3520",
+                "pathDistance": "55916",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "2",
+                "pathTime": "661",
+                "pathDistance": "4245",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "3",
+                "pathTime": "863",
+                "pathDistance": "9360",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "4",
+                "pathTime": "3421",
+                "pathDistance": "55702",
+                "pathFare": "0"
+            }
+        ]
+    },
+    {
+        "properties": {
+            "totalDistance": "120954",
+            "totalTime": "8426",
+            "totalFare": "0",
+            "routeScore": 4.97,
+            "totalScore": 2.31
+        },
+        "points": [
+            {
+                "pointId": "0",
+                "pointName": "출발",
+                "pointLatitude": 36.35909922,
+                "pointLongitude": 127.30196967
+            },
+            {
+                "pointId": "1",
+                "pointName": "높은댕이",
+                "pointLatitude": 36.31137637,
+                "pointLongitude": 126.9546965
+            },
+            {
+                "pointId": "2",
+                "pointName": "백제문화단지",
+                "pointLatitude": 36.30662608,
+                "pointLongitude": 126.90670093
+            },
+            {
+                "pointId": "3",
+                "pointName": "장원막국수",
+                "pointLatitude": 36.28912812,
+                "pointLongitude": 126.90875677
+            },
+            {
+                "pointId": "4",
+                "pointName": "도착",
+                "pointLatitude": 36.359102,
+                "pointLongitude": 127.30196967
+            }
+        ],
+        "paths": [
+            {
+                "pathId": "1",
+                "pathTime": "3284",
+                "pathDistance": "50754",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "2",
+                "pathTime": "761",
+                "pathDistance": "7096",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "3",
+                "pathTime": "732",
+                "pathDistance": "5915",
+                "pathFare": "0"
+            },
+            {
+                "pathId": "4",
+                "pathTime": "3649",
+                "pathDistance": "57189",
+                "pathFare": "0"
+            }
+        ]
+    }
+]
