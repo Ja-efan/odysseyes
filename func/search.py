@@ -2,9 +2,12 @@ import os
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
-KAKAO_API_KEY = os.environ['KAKAO_KEY']
-API_KEY = os.environ['API_KEY']
+# load_dotenv()
+# KAKAO_API_KEY = os.environ['KAKAO_KEY']
+# API_KEY = os.environ['API_KEY']
+
+KAKAO_API_KEY = ''
+API_KEY = ''
 
 def get_lon_lat(search: str):
     url = 'https://dapi.kakao.com/v2/local/search/keyword.json'
