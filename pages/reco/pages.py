@@ -8,7 +8,7 @@ module_dir = os.path.dirname(os.path.abspath(__file__))
 PROJECT__ROOT_PATH = os.path.join(module_dir, '../../..')
 sys.path.append(PROJECT__ROOT_PATH)
 
-RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
+RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
 from func.TMAP_API import get_my_topk_optimized_routes
@@ -180,7 +180,7 @@ def recommend_page():
 
     import json
     if DEBUG:
-        with open(r'recommend\data\my_route_sample.json', 'r') as f:
+        with open(r'..\recommend\data\my_route_sample.json', 'r') as f:
             data = json.load(f)
     else:
         if len(st.session_state['route']) == 0:
