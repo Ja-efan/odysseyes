@@ -80,3 +80,7 @@ def get_festival_info(search_keyword):
     phones = result['tel'].split('<br>')[1:-1]
 
     return search_keyword, map_lat_lon, lat_lon_dict, image, phones
+
+"""
+get_festival_info - 백제문화제 : 백제문화제 (36.4702917892, 127.1275545162) {('미르섬', '충청남도 공주시 금벽로 368 '): [127.128418890171, 36.4674920688043], ('백제문화단지', ' 충청남도 부여군 규암면 백제문로 455 백제문화단지'): [126.906673511388, 36.3063152681079]} http://tong.visitkorea.or.kr/cms/resource/46/2953046_image2_1.jpg []
+"""

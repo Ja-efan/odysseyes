@@ -5,13 +5,13 @@ import sys
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
 # CSV 파일의 경로를 모듈 파일 경로를 기준으로 설정
-PROJECT__ROOT_PATH = os.path.join(module_dir, '../../..')
+PROJECT__ROOT_PATH = os.path.join(module_dir, '../..')
 sys.path.append(PROJECT__ROOT_PATH)
 
-RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../../recommend')
+RECOMMEND_SYS_PATH = os.path.join(module_dir, './recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-from func.TMAP_API import get_my_topk_optimized_routes
+from recommend.func.TMAP_API import get_my_topk_optimized_routes
 
 from collections import defaultdict
 
@@ -37,7 +37,7 @@ def load_image(image_file):
     return base64.b64encode(data).decode()
 
 closest_location = 'OD'
-PIN_IMG = r"pages\reco\img\location-pin.png"
+PIN_IMG = r"./pages/reco/img/location-pin.png"
 DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
@@ -83,7 +83,12 @@ def select_page():
 
         st.session_state.store = st.session_state.search_query
 
-        search_keyword, st.session_state.map_lat_lon, lat_lon_dict, image, phones = search.get_festival_info(' '.join(st.session_state.search_query))
+        if DEBUG:
+            search_keyword, st.session_state.map_lat_lon, lat_lon_dict, image, phones = '백제문화제', (36.4702917892, 127.1275545162), {('미르섬', '충청남도 공주시 금벽로 368 '): [127.128418890171, 36.4674920688043], ('백제문화단지', ' 충청남도 부여군 규암면 백제문로 455 백제문화단지'): [126.906673511388, 36.3063152681079]}, "http://tong.visitkorea.or.kr/cms/resource/46/2953046_image2_1.jpg", []
+        else:
+            search_keyword, st.session_state.map_lat_lon, lat_lon_dict, image, phones = search.get_festival_info(' '.join(st.session_state.search_query))
+            print('get_festival_info -', ' '.join(st.session_state.search_query), ':', search_keyword, st.session_state.map_lat_lon, lat_lon_dict, image, phones)
+
         locations = {}
         for (place_name, addr), lat_lon in lat_lon_dict.items():
             locations[place_name] = {"coordinates": lat_lon[::-1], "info": addr + '\n', "image":image}
@@ -180,14 +185,10 @@ def recommend_page():
 
     import json
     if DEBUG:
-        with open(r'..\recommend\data\my_route_sample.json', 'r') as f:
+        with open(r'./recommend/data/my_route_sample2.json', 'r') as f:
             data = json.load(f)
     else:
         if len(st.session_state['route']) == 0:
-            start_place = "유성구 덕명동 515-3"
-            end_place = "유성구 덕명동 515-3"
-            selected_sigungu = '부여'
-            selected_festival_place = "백제문화단지"
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
             data = get_my_topk_optimized_routes(
                 start_place=st.session_state['origin'],

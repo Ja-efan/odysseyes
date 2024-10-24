@@ -239,7 +239,7 @@ def fest_togo_count(gb):
     # 데이터 로드
     ## 축제기간 여부 / 방문지 인기도
     # 데이터 로드
-    df = pd.read_csv("./b_fest_togo_count.csv")
+    df = pd.read_csv(f"./data/{gb}_fest_togo_count.csv")
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
     quantiles = df['방문건수'].quantile([0.5])
@@ -436,7 +436,7 @@ def combined_output(gb):
 
     ## 축제기간 여부에 따른 방문건수 시각화_공주시 데이터
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_combined_output.csv")
+    df = pd.read_csv(f"./data/combined_output.csv")
 
     # festival_period가 숫자로 저장된 경우 문자열로 변환
     df['festival_period'] = df['festival_period'].astype(str)
@@ -456,7 +456,7 @@ def combined_output(gb):
     for group in df_sorted['festival_period'].unique():
         if group == '0': 
             aan = '축제기간 전'
-        elif group == '1': 
+        elif group == '1':
             aan = '축제기간 중'
         elif group == '2': 
             aan = '축제기간 후'
@@ -491,9 +491,7 @@ def combined_output(gb):
     # 레이어 컨트롤 추가 (레이어 선택 가능)
     folium.LayerControl().add_to(m)
 
-    region_name = "공주시" if gb == 'g' else "부여군"
-
-    return m, f"축제기간 여부에 따른 방문건수 시각화_{region_name} 데이터"
+    return m, f"축제기간 여부에 따른 방문건수 시각화_데이터"
 
     # # 지도 저장
     # m.save('map_fest_visit_count.html')
@@ -506,20 +504,14 @@ def wkd_visit_count(gb):
     df = pd.read_csv(f"./data/{gb}_wkd_visit_count.csv")
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
-    quantiles = df['방문건수'].quantile([0.2, 0.4, 0.6, 0.8, 1.0])
+    quantiles = df['방문건수'].quantile([0.5])
 
     # 각 행의 '방문건수'가 어느 분위수에 속하는지 확인하여 '방문건수구간' 컬럼에 저장
     def assign_visit_range(visit_count):
-        if visit_count <= quantiles[0.2]:
-            return 1
-        elif visit_count <= quantiles[0.4]:
-            return 2
-        elif visit_count <= quantiles[0.6]:
-            return 3
-        elif visit_count <= quantiles[0.8]:
-            return 4
+        if visit_count <= quantiles[0.5]:
+            return "보통"
         else:
-            return 5
+            return "인기"
 
     df['방문건수구간'] = df['방문건수'].apply(assign_visit_range)
 
@@ -548,10 +540,10 @@ def wkd_visit_count(gb):
             aaan = "주말"
         
         for period in df_sorted['festival_period'].unique():
-            if period == '0': 
-                aan = '축제기간 외'
-            elif period == '1': 
+            if period == '1': 
                 aan = '축제기간'
+            else:
+                aan = '축제기간 외'
             
             for group in df_sorted['방문건수구간'].unique():
                 # 마커 그룹의 이름을 주말 여부, 축제 기간, 방문건수구간을 조합하여 생성
