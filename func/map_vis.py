@@ -24,7 +24,7 @@ attr=""
 def bj_navi(gb):
     ## 목적지 분류 별 방문건수 시각화_공주시 데이터
     # 데이터 로드
-
+    print(f"./data/{gb}_bj_navi_전처리데이터.csv")
     df = pd.read_csv(f"./data/{gb}_bj_navi_전처리데이터.csv")
 
     df = df.groupby(

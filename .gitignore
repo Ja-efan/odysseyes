@@ -2,14 +2,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 *.pdf
-*.csv
 *.json
-!KIKmix_20230701.csv
-!2018_survey.csv
-!2020_survey.csv
-!2022_survey.csv
-!추천장소통합리스트.csv
-!g_togo_count.csv
 !my_route_sample.json
 !my_route_sample2.json
 *.xlsx

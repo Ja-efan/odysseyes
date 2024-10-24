@@ -10,26 +10,6 @@ from func.map_vis import bj_navi, togo_count, not_togo_count, fest_togo_count, f
 
 # import base64
 
-df=pd.read_csv("data/g_togo_count.csv")
-df.head()
-
-# # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
-# map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-# m = folium.Map(location=map_center, zoom_start=12)
-
-# 색상을 위한 방문건수 구간에 따른 색상 설정 함수
-def get_color(방문건수구간):
-    if 방문건수구간 == 1:
-        return 'lightgray'
-    elif 방문건수구간 == 2:
-        return 'lightblue'
-    elif 방문건수구간 == 3:
-        return 'orange'
-    elif 방문건수구간 == 4:
-        return 'red'
-    else:
-        return 'darkred'
-
 import streamlit as st
 import folium
 from streamlit_folium import folium_static
