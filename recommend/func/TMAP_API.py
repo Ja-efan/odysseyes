@@ -15,22 +15,22 @@ load_dotenv()
 warnings.filterwarnings("ignore")
 
 #################### CONST VAR ####################
-# SK_API_KEY = os.getenv("SK_OPEN_API_KEY")  # 재환 - 241021 할당량 끝
+SK_API_KEY = os.getenv("SK_OPEN_API_KEY")  # 재환 - 241021 할당량 끝
 # SK_API_KEY = os.getenv("SK_OPEN_API_KEY2")  # 제후 - 10(50/50) 20(25/50)
 # SK_API_KEY = os.getenv("SK_OPEN_API_KEY3")  # 기범 - 10(50/50)
 # SK_API_KEY = os.getenv("SK_OPEN_API_KEY4")  # 영희 - 10(25/50)
 routeOptimization = 20  # 10 or 20
 ###################################################
-
-SK_API_KEY = ''
+print(SK_API_KEY)
+# SK_API_KEY = ''
 
 def get_poi_by_keyword(keyword: str, return_full: bool = False, **kwargs):
     """TMAP poi 정보 반환 함수입니다.
 
     Args:
-        region (str): 지역명 (시군구 단위).
         keyword (str): 검색 키워드.
         return_full (bool): api 요청 응답 전체 반환 여부. Defaults to False
+        region (str): 지역명 (시군구 단위).
 
     Returns:
         result: json
