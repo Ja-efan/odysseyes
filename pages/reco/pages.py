@@ -37,7 +37,8 @@ def load_image(image_file):
     return base64.b64encode(data).decode()
 
 closest_location = 'OD'
-PIN_IMG = r"./pages/reco/img/location-pin.png"
+# PIN_IMG = r"./pages/reco/img/location-pin.png"
+PIN_IMG = os.path.join(module_dir, 'img', 'location-pin.png')
 DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
