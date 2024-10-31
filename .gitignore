@@ -5,6 +5,7 @@
 *.json
 !my_route_sample.json
 !my_route_sample2.json
+!sample_optimized_route.json
 *.xlsx
 *.zip
 .DS_Store

@@ -169,7 +169,7 @@ def select_page():
 
         if st.button(f"{closest_location} 여행가기!", disabled=(st.session_state.clicked_location is None)):
             if st.session_state.clicked_location:
-                st.write(f"선택한 위치로 여행을 시작합니다: {location}")
+                st.write(f"선택한 위치로 여행을 시작합니다: {st.session_state.locations}")
                 st.session_state['page'] = 'recommend'
                 st.rerun()
             else:
@@ -211,6 +211,14 @@ def recommend_page():
     colors = ["blue", "green", "red", "purple", "orange"]  # 각 경로에 대한 색상 리스트
 
     for route in st.session_state['route']:
+        '''
+        route = {
+            'properties': properties,
+            'points': points,
+            'paths': paths,
+            'lineCoordinates': coordinates
+        }
+        '''
         route_points = route['points']
         all_points.extend([(point['pointLatitude'], point['pointLongitude']) for point in route_points])
 
@@ -222,16 +230,29 @@ def recommend_page():
 
     selected_route = st.session_state['route'][selected_route_index]
     route_points = selected_route['points']
-    points = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+    points_coordinates = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+    line_coordinates = selected_route['lineCoordinates']
     color = colors[selected_route_index % len(colors)]
 
+    ######################## old ###########################
+    # folium.PolyLine(
+    #     locations=points,
+    #     color=color,
+    #     weight=5,
+    #     opacity=0.8,
+    #     smooth_factor=10
+    # ).add_to(st.session_state.m)
+    #########################################################
+
+    # 경로 (lineString의 좌표정보를 이용한 경로 시각화)
     folium.PolyLine(
-        locations=points,
+        line_coordinates,
         color=color,
-        weight=5,
-        opacity=0.8,
-        smooth_factor=10
+        weight=2.5,
+        opacity=1
     ).add_to(st.session_state.m)
+
+
     # 선택된 경로의 각 점에 마커 추가
     for order, point in enumerate(route_points):
         folium.Marker(
@@ -245,8 +266,8 @@ def recommend_page():
             )
         ).add_to(st.session_state.m)
 
-    # 모든 노드의 경계를 계산하여 지도 조정
-    if all_points:
+    # 출발지와 도착지를 제외한 노드의 위치를 계산하여 지도 조정
+    if all_points[1:-2]:  
         lats, lons = zip(*all_points)
         bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
         st.session_state.m.fit_bounds(bounds)  # 모든 노드를 포함하도록 줌 조정
@@ -259,5 +280,3 @@ def recommend_page():
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
     for order, point in enumerate(selected_route['points']):
         st.write(f"{order + 1}. {point['pointName']}")
-
-
