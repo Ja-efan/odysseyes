@@ -24,8 +24,13 @@ attr=""
 def bj_navi(gb):
     ## 목적지 분류 별 방문건수 시각화_공주시 데이터
     # 데이터 로드
-    print(f"./data/{gb}_bj_navi_전처리데이터.csv")
-    df = pd.read_csv(f"./data/{gb}_bj_navi_전처리데이터.csv")
+    
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_bj_navi_전처리데이터.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv(f"./data/bj_navi_전처리데이터.csv")
+        zoom_start = 7
 
     df = df.groupby(
         ['대분류', '소분류', '목적지명','목적지읍면동명', '목적지X좌표', '목적지Y좌표'], as_index=False
@@ -33,12 +38,12 @@ def bj_navi(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
     # Reds_09, YlOrRd_03, Set3_12, Spectral_03
     colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
-    print(colormap)
+    # print(colormap)
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -82,10 +87,16 @@ def bj_navi(gb):
     # # 지도 저장
     # m.save('map_전처리_count.html')
 
+
 def togo_count(gb):
     ## 방문건수 시각화_공주시 데이터
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_togo_count.csv")
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_togo_count.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv(f"./data/togo_count.csv")
+        zoom_start = 7
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
     quantiles = df['방문건수'].quantile([0.2, 0.4, 0.6, 0.8, 1.0])
@@ -110,10 +121,10 @@ def togo_count(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -161,7 +172,12 @@ def togo_count(gb):
 def not_togo_count(gb):
     ## 방문건수 시각화_공주시데이터_외부유입 방문객
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_not_togo_count.csv")
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_not_togo_count.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv(f"./data/not_togo_count.csv")
+        zoom_start = 7
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
     quantiles = df['방문건수'].quantile([0.2, 0.4, 0.6, 0.8, 1.0])
@@ -186,10 +202,10 @@ def not_togo_count(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -239,7 +255,13 @@ def fest_togo_count(gb):
     # 데이터 로드
     ## 축제기간 여부 / 방문지 인기도
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_fest_togo_count.csv")
+
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_fest_togo_count.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv(f"./data/fest_togo_count.csv")
+        zoom_start = 7
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
     quantiles = df['방문건수'].quantile([0.5])
@@ -263,15 +285,15 @@ def fest_togo_count(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
 
-    print(df_sorted)
+    # print(df_sorted)
 
     # 'festival_period'와 '방문건수구간'에 따른 마커 그룹 만들기
     marker_groups = {}
@@ -327,7 +349,12 @@ def fest_togo_count(gb):
 def fest_not_togo_count(gb):
     ## 공주 외부유입 데이터_축제기간 내외, 목적지 분류 별
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_fest_not_togo_count.csv")
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_fest_not_togo_count.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv(f"./data/fest_not_togo_merged.csv")
+        zoom_start = 7
 
     # '목적지명', 'festival_period' 등을 기준으로 방문건수를 그룹화
     df = df.groupby(
@@ -337,10 +364,10 @@ def fest_not_togo_count(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -446,7 +473,7 @@ def combined_output(gb):
     m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -501,7 +528,12 @@ def wkd_visit_count(gb):
 
     ## 주말여부 / 축제기간여부 / 방문지인기도
     # 데이터 로드
-    df = pd.read_csv(f"./data/{gb}_wkd_visit_count.csv")
+    if gb:
+        df = pd.read_csv(f"./data/{gb}_wkd_visit_count.csv")
+        zoom_start = 12
+    else:
+        df = pd.read_csv("./data/wkd_visit_count.csv")
+        zoom_start = 7
 
     # 분위수 계산 (20분위수, 40분위수, 60분위수, 80분위수, 100분위수)
     quantiles = df['방문건수'].quantile([0.5])
@@ -523,10 +555,10 @@ def wkd_visit_count(gb):
 
     # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
     map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
-    m = folium.Map(location=map_center, zoom_start=12, tiles=theme, attr=attr)
+    m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=theme, attr=attr)
 
     # 붉은 계열 색상 그라데이션 설정 (방문건수에 따른 색상 설정)
-    colormap = linear.Reds_09.scale(df['방문건수'].min(), df['방문건수'].max())
+    colormap = linear.YlOrRd_03.scale(df['방문건수'].min(), df['방문건수'].max())
 
     # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
     df_sorted = df.sort_values(by='방문건수', ascending=True)
@@ -583,3 +615,60 @@ def wkd_visit_count(gb):
 
     # # 지도 저장
     # m.save('map_wkd_visit_count.html')
+
+
+def region_part():
+
+    # 데이터 로드
+    df = pd.read_csv("./data/맵표시용_좌표파일.csv")
+
+    # 지도 생성 (중심을 대략적인 평균 좌표로 설정)
+    map_center = [df['목적지Y좌표'].mean(), df['목적지X좌표'].mean()]
+    m = folium.Map(location=map_center, zoom_start=7)
+
+    # 방문건수에 따른 오름차순 정렬 (작은 값이 먼저 그려지도록)
+    df_sorted = df.sort_values(by='방문건수', ascending=True)
+
+    # 각 시도별로 최소-최대 방문건수를 기준으로 개별 컬러맵 생성
+    marker_groups = {}
+    colormaps = {}
+    for group in df_sorted['시도'].unique():
+        # 해당 시도의 방문건수 최소-최대값 계산 후 컬러맵 생성
+        min_count = df_sorted[df_sorted['시도'] == group]['방문건수'].min()
+        max_count = df_sorted[df_sorted['시도'] == group]['방문건수'].max()
+        colormaps[group] = linear.Reds_09.scale(min_count, max_count)
+        
+        # 충청남도 그룹만 기본 표시 (다른 그룹은 비활성화)
+        show_group = True if '충청남도' == group else False
+        marker_groups[group] = folium.FeatureGroup(name=f"{group}", show=show_group)
+
+    # 마커 추가
+    for _, row in df_sorted.iterrows():
+        # 해당 시도의 컬러맵 사용
+        color = colormaps[row['시도']](row['방문건수'])
+        
+        # CircleMarker 생성
+        label = f"{row['목적지명']}, 방문건수: {row['방문건수']}"
+        marker = folium.CircleMarker(
+            location=[row['목적지Y좌표'], row['목적지X좌표']],
+            radius=4 + row['방문건수'] * 0.000001,  # 방문건수에 따라 크기 조절
+            color=color,
+            fill=True,
+            fill_opacity=0.7,
+            tooltip=label,
+        )
+        
+        # 해당 시도의 마커 그룹에 추가
+        marker.add_to(marker_groups[row['시도']])
+
+    # 마커 그룹을 지도에 추가
+    for group in marker_groups.values():
+        group.add_to(m)
+
+    # 레이어 컨트롤 추가 (레이어 선택 가능)
+    folium.LayerControl().add_to(m)
+
+    # # 지도 저장
+    # m.save('map_지역별_count.html')
+
+    return m, f"map_지역별_count"
