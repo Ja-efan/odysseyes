@@ -5,15 +5,24 @@ import sys
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
 # CSV 파일의 경로를 모듈 파일 경로를 기준으로 설정
-PROJECT__ROOT_PATH = os.path.join(module_dir, '../..')
-sys.path.append(PROJECT__ROOT_PATH)
+PROJECT_ROOT_PATH = os.path.join(module_dir, '../..')
+sys.path.append(PROJECT_ROOT_PATH)
 
-RECOMMEND_SYS_PATH = os.path.join(module_dir, './recommend')
+RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-from recommend.func.TMAP_API import get_my_topk_optimized_routes
+# from recommend.func.TMAP_API import get_my_topk_optimized_routes
+from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer
 
-from collections import defaultdict
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv('SK_OPEN_API_KEY')
+tmap_client = TMAPClient(api_key)
+place_data_manager = PlaceDataManager(data_path="추천장소통합리스트.csv")
+route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
+
+
+from collections import defaultdict 
 
 # from importlib import reload
 from func import search
@@ -37,7 +46,8 @@ def load_image(image_file):
     return base64.b64encode(data).decode()
 
 closest_location = 'OD'
-PIN_IMG = r"./pages/reco/img/location-pin.png"
+# PIN_IMG = r"./pages/reco/img/location-pin.png"
+PIN_IMG = os.path.join(module_dir, 'img', 'location-pin.png')
 DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
@@ -168,14 +178,14 @@ def select_page():
 
         if st.button(f"{closest_location} 여행가기!", disabled=(st.session_state.clicked_location is None)):
             if st.session_state.clicked_location:
-                st.write(f"선택한 위치로 여행을 시작합니다: {location}")
+                st.write(f"선택한 위치로 여행을 시작합니다: {st.session_state.locations}")
                 st.session_state['page'] = 'recommend'
                 st.rerun()
             else:
                 st.write("먼저 장소를 선택해주세요.")
 
 
-from recommend.func.TMAP_API import get_my_topk_optimized_routes
+# from recommend.func.TMAP_API import get_my_topk_optimized_routes
 
 def recommend_page():
     # 페이지 제목
@@ -187,12 +197,27 @@ def recommend_page():
 
     import json
     if DEBUG:
-        with open(r'./recommend/data/my_route_sample2.json', 'r') as f:
+        # sample_file_name = 'sample_top3_optimized_routes.json'
+        sample_file_name = 'top_routes.json'
+        sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
+        with open(sample_data_path, 'r') as f:
             data = json.load(f)
     else:
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
-            data = get_my_topk_optimized_routes(
+
+            # # func.TMAP_API.get_my_topk_optimized_routes
+            # data = get_my_topk_optimized_routes(
+            #     start_place=st.session_state['origin'],
+            #     end_place=st.session_state['origin'],
+            #     selected_region=st.session_state["selected_sigungu"],
+            #     selected_festival_place=st.session_state["dest_addr"],
+            #     comb=2,
+            #     comb_k=5,
+            #     topk=3
+            # )
+
+            data = route_optimizer.get_top_k_routes(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
                 selected_region=st.session_state["selected_sigungu"],
@@ -210,53 +235,75 @@ def recommend_page():
     colors = ["blue", "green", "red", "purple", "orange"]  # 각 경로에 대한 색상 리스트
 
     for route in st.session_state['route']:
+        '''
+        route = {
+            'properties': properties,
+            'points': points,
+            'paths': paths,
+            'lineCoordinates': coordinates
+        }
+        '''
         route_points = route['points']
         all_points.extend([(point['pointLatitude'], point['pointLongitude']) for point in route_points])
 
-    # 기본 지도 생성
-    st.session_state.m = folium.Map(location=[0, 0], zoom_start=2)  # 기본 위치 및 줌 레벨 설정
-
     # 경로 선택을 위한 드롭다운 생성
-    selected_route_index = st.selectbox("경로 선택", range(len(st.session_state['route'])))
+    selected_route_index = st.selectbox("경로 선택", range(1, len(st.session_state['route'])+1)) -1
 
     selected_route = st.session_state['route'][selected_route_index]
     route_points = selected_route['points']
-    points = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+    points_coordinates = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+    line_coordinates = [(coord[1], coord[0]) for coord in selected_route['lineCoordinates']]
     color = colors[selected_route_index % len(colors)]
 
-    folium.PolyLine(
-        locations=points,
-        color=color,
-        weight=5,
-        opacity=0.8,
-        smooth_factor=10
-    ).add_to(st.session_state.m)
+    if points_coordinates:
+
+        ################################ ver 1. 축제 지역 포커싱 ##################################
+        inner_points = points_coordinates[1:-1]
+        center_lat = round(sum([lat for lat, _ in inner_points]) / len(inner_points), 8)
+        center_lon = round(sum([lon for _, lon in inner_points]) / len(inner_points), 8)
+        #######################################################################################
+
+        ################################ ver 2. 전체 경로 표시  ##################################
+        # center_lat = sum([lat for lat, _ in points_coordinates]) / len(points_coordinates)
+        # center_lon = sum([lon for _, lon in points_coordinates]) / len(points_coordinates)
+        #######################################################################################
+
+        print("######## center ########")
+        print(center_lat, center_lon)
+        st.session_state.m = folium.Map(location=[center_lat, center_lon], zoom_start=13)
+    else:
+        st.session_state.m = folium.Map(location=[0, 0], zoom_start=2)
+    
+    # 경로 시각화
+    if line_coordinates:
+        folium.PolyLine(
+            locations=line_coordinates,
+            color=color,
+            weight=2.5,
+            opacity=1
+        ).add_to(st.session_state.m)
+    else:
+        st.warning("유효한 경로 좌표가 없습니다.")
+    
+
     # 선택된 경로의 각 점에 마커 추가
     for order, point in enumerate(route_points):
         folium.Marker(
             location=(point['pointLatitude'], point['pointLongitude']),
             icon=folium.DivIcon(
-                html=f"""<div style="width: 40px; height: 40px; background-color: {color}; 
+                html=f"""<div style="width: 25px; height: 25px; background-color: {color}; 
                         border-radius: 20px; display: flex; align-items: center; justify-content: center; 
-                        color: white; font-weight: bold; font-size: 12pt; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);">
+                        color: white; font-weight: bold; font-size: 10pt; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);">
                         {order + 1}
                         </div>""",
             )
         ).add_to(st.session_state.m)
 
-    # 모든 노드의 경계를 계산하여 지도 조정
-    if all_points:
-        lats, lons = zip(*all_points)
-        bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
-        st.session_state.m.fit_bounds(bounds)  # 모든 노드를 포함하도록 줌 조정
 
     # Folium 지도 출력
     st_folium(st.session_state.m, width=700, height=500)
 
     # 선택된 경로에 대한 정보 표시
-    selected_route = st.session_state['route'][selected_route_index]
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
     for order, point in enumerate(selected_route['points']):
         st.write(f"{order + 1}. {point['pointName']}")
-
-

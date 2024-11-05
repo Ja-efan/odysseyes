@@ -12,31 +12,30 @@ from .tools import *
 
 load_dotenv()
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
 #################### CONST VAR ####################
-# SK_API_KEY = os.getenv("SK_OPEN_API_KEY")  # 재환 - 241021 할당량 끝
-# SK_API_KEY = os.getenv("SK_OPEN_API_KEY2")  # 제후 - 10(50/50) 20(25/50)
-# SK_API_KEY = os.getenv("SK_OPEN_API_KEY3")  # 기범 - 10(50/50)
-# SK_API_KEY = os.getenv("SK_OPEN_API_KEY4")  # 영희 - 10(25/50)
-routeOptimization = 20  # 10 or 20
+SK_API_KEY = os.getenv('SK_OPEN_API_KEY')  # 재환 - 241021 할당량 끝
+# SK_API_KEY = os.getenv('SK_OPEN_API_KEY2')  # 제후 - 10(50/50) 20(25/50)
+# SK_API_KEY = os.getenv('SK_OPEN_API_KEY3')  # 기범 - 10(50/50)
+# SK_API_KEY = os.getenv('SK_OPEN_API_KEY4')  # 영희 - 10(25/50)
+routeOptimization = 10  # 10 or 20
 ###################################################
 
-SK_API_KEY = ''
 
 def get_poi_by_keyword(keyword: str, return_full: bool = False, **kwargs):
-    """TMAP poi 정보 반환 함수입니다.
+    '''TMAP poi 정보 반환 함수입니다.
 
     Args:
-        region (str): 지역명 (시군구 단위).
         keyword (str): 검색 키워드.
         return_full (bool): api 요청 응답 전체 반환 여부. Defaults to False
+        region (str): 지역명 (시군구 단위).
 
     Returns:
         result: json
-    """
+    '''
 
-    region = kwargs.get("region", None)
+    region = kwargs.get('region', None)
     if region:
         search_keyword = region + ' ' + keyword
         url = f'https://apis.openapi.sk.com/tmap/pois?version=1&appKey={SK_API_KEY}&searchKeyword={search_keyword}'
@@ -47,7 +46,7 @@ def get_poi_by_keyword(keyword: str, return_full: bool = False, **kwargs):
         response = requests.get(url, verify=False)
         # 상태 코드 확인
         if response.status_code == 204:
-            print("No content available for this request (204).")
+            print('No content available for this request (204).')
             return None
         
         # 상태 코드가 200이 아닌 경우 에러 처리
@@ -70,16 +69,16 @@ def get_poi_by_keyword(keyword: str, return_full: bool = False, **kwargs):
         return poi
 
     except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
+        print(f'HTTP error occurred: {http_err}')
         return None
     except Exception as err:
-        print(f"An error occurred: {err}")
+        print(f'An error occurred: {err}')
         return None
 
 
 
 def get_route(start_poi, end_poi):
-    """_summary_
+    '''_summary_
 
     Args:
         start_poi (_type_): _description_
@@ -87,7 +86,7 @@ def get_route(start_poi, end_poi):
 
     Returns:
         _type_: _description_
-    """
+    '''
     url = f'https://apis.openapi.sk.com/tmap/routes?version=1&appKey={SK_API_KEY}'
     data = {
         'startX': start_poi['longitude'],
@@ -104,14 +103,14 @@ def get_optimized_route(src_keyword:str,
                         dst_keyword:str, 
                         region:str, 
                         via_points:list):
-    """TMAP API 기반 경유지 순서 최적화 루트 반환 함수입니다. 
+    '''TMAP API 기반 경유지 순서 최적화 루트 반환 함수입니다. 
 
     Args:
         src_keyword (str): 출발지 키워드
         dst_keyword (str): 목적지 키워드
         region (str): 사용자가 선택한 지역 (시군구 단위)
         via_points (list): 경유지 키워드 목록
-    """
+    '''
 
     # use headers
     
@@ -124,15 +123,15 @@ def get_optimized_route(src_keyword:str,
 
     # 출발지 Poi
     start_poi = get_poi_by_keyword(keyword=src_keyword)
-    print(f"출발지명: {src_keyword}")
+    print(f'출발지명: {src_keyword}')
 
     # 목적지 poi 
     end_poi = get_poi_by_keyword(keyword=dst_keyword)
-    print(f"도착지명: {dst_keyword}")
+    print(f'도착지명: {dst_keyword}')
 
     viaPoints = []
     for i, via_point_keyword in tqdm(enumerate(via_points)):
-        print(f"경유지 명: {via_point_keyword}")
+        print(f'경유지 명: {via_point_keyword}')
         via_poi = get_poi_by_keyword(keyword=via_point_keyword, region=region)
         if not via_poi: continue
 
@@ -152,11 +151,11 @@ def get_optimized_route(src_keyword:str,
     data = {
         'reqCoordType': 'WGS84GEO',
         'resCoordType': 'WGS84GEO',
-        'startName': "출발",
+        'startName': '출발',
         'startX': start_poi['longitude'],
         'startY': start_poi['latitude'],
         'startTime': '202410200125',  # 출발시간
-        'endName': "도착",
+        'endName': '도착',
         'endX': end_poi['longitude'],
         'endY': end_poi['latitude'],
         'endPoiId': '',
@@ -166,7 +165,7 @@ def get_optimized_route(src_keyword:str,
     }
    
     # api 요청 
-    print("############### 경유지 순서 최적화 요청 ###############")
+    print('############### 경유지 순서 최적화 요청 ###############')
     response = requests.post(url, json=data, headers=headers, verify=False)
     result = response.json()
 
@@ -177,7 +176,7 @@ def get_my_route_info(src_keyword:str,
                       dst_keyword:str, 
                       region:str, 
                       via_points:list):
-    """_summary_
+    '''_summary_
 
     Args:
         src_keyword (str): 출발지 키워드
@@ -220,34 +219,40 @@ def get_my_route_info(src_keyword:str,
             ]
         }
         ```
-    """
+    '''
     
     route = get_optimized_route(src_keyword=src_keyword, dst_keyword=dst_keyword, region=region,  via_points=via_points)
-    properties = route["properties"]
-    features = route["features"]
+    properties = route['properties']
+    features = route['features']
 
-    # result = dict{}
+
+    result = dict()
     points = []  # 장소 정보 리스트 
     paths = []  # 경로 정보 리스트 
     places = []
+    coordinates = []
     for feature in features:
-        type = feature["geometry"]['type']
-        if type == "Point":
+        _geometry = feature['geometry']
+        # type = _geometry['type']
+        if _geometry['type'] == 'Point':
             _point = defaultdict(str)
-            _point["pointId"] = feature["properties"]["index"]  # 장소 id (방문 순서)
-            _point["pointName"] = feature["properties"]["viaPointName"].split()[-1]  # 장소 명 
-            _point["pointLatitude"] = feature["geometry"]["coordinates"][1]  # 위도
-            _point["pointLongitude"]= feature["geometry"]["coordinates"][0]  # 경도 
+            _point['pointId'] = feature['properties']['index']  # 장소 id (방문 순서)
+            _point['pointName'] = feature['properties']['viaPointName'].split()[-1]  # 장소 명 
+            _point['pointLatitude'] = feature['geometry']['coordinates'][1]  # 위도
+            _point['pointLongitude']= feature['geometry']['coordinates'][0]  # 경도 
             points.append(_point)
-            places.append(_point["pointName"])
+            places.append(_point['pointName'])
 
-        elif type == "LineString":
+        elif _geometry['type'] == 'LineString':
             _path = defaultdict(str)
-            _path["pathId"] = feature["properties"]["index"]
-            _path["pathTime"] = feature["properties"]["time"]
-            _path["pathDistance"] = feature["properties"]["distance"]
-            _path["pathFare"] = feature["properties"]["Fare"]
+            _path['pathId'] = feature['properties']['index']
+            _path['pathTime'] = feature['properties']['time']
+            _path['pathDistance'] = feature['properties']['distance']
+            _path['pathFare'] = feature['properties']['Fare']
             paths.append(_path)
+            
+            # 경로(Line의 좌표 정보)
+            coordinates.extend(_geometry['coordinates'])
 
     # festival_place = via_points[-1].split()[0]
     
@@ -255,15 +260,17 @@ def get_my_route_info(src_keyword:str,
     recommended_places = via_points[:-1]
     route_score = get_route_score(recommended_places, region)
     
-    properties["routeScore"] = route_score
+    properties['routeScore'] = route_score
 
     result = {
-        "properties": properties,
-        "points": points,
-        "paths": paths
+        'properties': properties,
+        'points': points,
+        'paths': paths,
+        'lineCoordinates': coordinates
     }
     
     return result
+    
 
 
 def get_my_topk_optimized_routes(start_place:str, 
@@ -273,7 +280,7 @@ def get_my_topk_optimized_routes(start_place:str,
                                  comb:int=2, 
                                  comb_k:int=5, 
                                  topk:int=3) ->list:
-    """_summary_
+    '''_summary_
 
     Args:
         start_place (str): _description_
@@ -286,7 +293,7 @@ def get_my_topk_optimized_routes(start_place:str,
 
     Returns:
         list: _description_
-    """
+    '''
     place_comb_list = get_place_comb_list(region=selected_region, n=comb, k=comb_k)
 
     route_list = []
@@ -295,7 +302,7 @@ def get_my_topk_optimized_routes(start_place:str,
         route = get_my_route_info(start_place, end_place, selected_region, place_comb)
         route_list.append(route)
 
-    new_route_list = get_scaled_score(route_list)
+    route_list_with_scaled_score = get_scaled_score(route_list)
 
-    top_3_routes = get_topk_optimized_route(route_list=new_route_list, k=topk)
+    top_3_routes = get_topk_optimized_route(route_list=route_list_with_scaled_score, k=topk)
     return top_3_routes
