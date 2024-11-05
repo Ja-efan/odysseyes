@@ -7,6 +7,7 @@
 !my_route_sample2.json
 !sample_optimized_route.json
 !sample_top3_optimized_routes.json
+!top_routes.json
 *.xlsx
 *.zip
 .DS_Store
