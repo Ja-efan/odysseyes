@@ -7,7 +7,6 @@ import pandas as pd
 from itertools import combinations
 from sklearn.preprocessing import MinMaxScaler
 from tqdm import tqdm
-from tools import print_json
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

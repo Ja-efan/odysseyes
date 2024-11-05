@@ -247,7 +247,7 @@ def recommend_page():
         all_points.extend([(point['pointLatitude'], point['pointLongitude']) for point in route_points])
 
     # 경로 선택을 위한 드롭다운 생성
-    selected_route_index = st.selectbox("경로 선택", range(1, len(st.session_state['route'])+1))
+    selected_route_index = st.selectbox("경로 선택", range(1, len(st.session_state['route'])+1)) -1
 
     selected_route = st.session_state['route'][selected_route_index]
     route_points = selected_route['points']
