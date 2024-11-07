@@ -222,9 +222,24 @@ class RouteOptimizer:
         """상위 k개의 최적 경로를 반환"""
         place_combinations = self.place_data_manager.generate_place_combinations(region, comb, comb_k)
         
-        start_poi = self.tmap_client.get_poi(start_place)
-        end_poi = self.tmap_client.get_poi(end_place)
-            
+        # place_data_manager.search_poi() 로직 추가 
+        search_poi_result_start_place = self.place_data_manager.search_poi(start_place, region)
+        if search_poi_result_start_place:
+            start_poi = search_poi_result_start_place
+        else:
+            start_poi = self.tmap_client.get_poi(start_place, region)
+
+
+        if start_place == end_place:
+            end_poi = search_poi_result_start_place
+        else:
+            search_poi_result_end_place = self.place_data_manager.search_poi(end_place, region)
+            if search_poi_result_end_place:
+                end_poi = search_poi_result_end_place
+            else:
+                end_poi = self.tmap_client.get_poi(end_place, region)
+
+
         route_list = []
         for place_combination in place_combinations:
             via_pois = []
