@@ -98,11 +98,17 @@ class TMAPClient:
 
 class PlaceDataManager:
     """장소 데이터를 로드하고 조합을 생성하는 클래스"""
-    def __init__(self, data_path: str):
+    def __init__(self, file_name=None):
+
         # 현재 모듈 파일의 디렉터리 경로를 가져옴
-        module_dir = os.path.dirname(os.path.abspath(__file__))
-        # CSV 파일의 경로를 모듈 파일 경로를 기준으로 설정
-        data_path = os.path.join(module_dir, '..', 'data', f'{data_path}')
+        self.module_dir = os.path.dirname(os.path.abspath(__file__))
+
+        if file_name is None:
+            # CSV 파일의 경로를 모듈 파일 경로를 기준으로 설정
+            default_file_name = '추천장소통합리스트.csv'
+            data_path = os.path.join(self.module_dir, '..', 'data', f'{default_file_name}')
+        else:
+            data_path = os.path.join(self.module_dir, '..', 'data', f'{file_name}')
 
         self.data_path = data_path
         self.place_data = pd.read_csv(data_path)
@@ -125,6 +131,37 @@ class PlaceDataManager:
                     combinations_list.append([cafe, res] + list(land_comb))
         return combinations_list
 
+    
+    def search_poi(self, keyword: str, region: str):
+        """추천장소통합리스트에 찾고자 하는 장소의 POI 반환
+
+        Args:
+            keyword (str): 장소명
+            region (str): 지역명
+
+        Returns:
+            _type_: dict
+        """
+
+        if region:
+            filtered_data = self.place_data[self.place_data['지역'] == region]
+        
+        try:
+            poi_dict = filtered_data[filtered_data['목적지명'] == keyword].to_dict(orient='records')[0]
+            keys_to_extract = ['목적지명', '위도', '경도']
+
+            new_poi_dict = {key: poi_dict[key] for key in keys_to_extract if key in poi_dict}
+
+            return new_poi_dict
+            
+        except IndexError:
+            raise ValueError(f"Keyword '{keyword}' not found in '목적지명'.")
+        except KeyError as e:
+            raise KeyError(f"Key '{e.args[0]}' not found in the data for keyword '{keyword}'.")
+
+
+    def __str__(self):
+        return self.data_path
 
 class RouteOptimizer:
     """경로 최적화를 수행하고 상위 경로를 반환하는 클래스"""
@@ -185,9 +222,24 @@ class RouteOptimizer:
         """상위 k개의 최적 경로를 반환"""
         place_combinations = self.place_data_manager.generate_place_combinations(region, comb, comb_k)
         
-        start_poi = self.tmap_client.get_poi(start_place)
-        end_poi = self.tmap_client.get_poi(end_place)
-            
+        # place_data_manager.search_poi() 로직 추가 
+        search_poi_result_start_place = self.place_data_manager.search_poi(start_place, region)
+        if search_poi_result_start_place:
+            start_poi = search_poi_result_start_place
+        else:
+            start_poi = self.tmap_client.get_poi(start_place, region)
+
+
+        if start_place == end_place:
+            end_poi = search_poi_result_start_place
+        else:
+            search_poi_result_end_place = self.place_data_manager.search_poi(end_place, region)
+            if search_poi_result_end_place:
+                end_poi = search_poi_result_end_place
+            else:
+                end_poi = self.tmap_client.get_poi(end_place, region)
+
+
         route_list = []
         for place_combination in place_combinations:
             via_pois = []
