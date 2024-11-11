@@ -191,6 +191,6 @@ class TMAPClient:
         for _feature in _features:
             _geometry = _feature['geometry']
             if _geometry['type'] == 'LineString':
-                polyline_points.extend(_geometry['coordinates'])
+                polyline_points.extend([(coords[0], coords[1]) for coords in _geometry['coordinates']])
 
         return polyline_points
