@@ -173,3 +173,24 @@ class TMAPClient:
         result = response.json()
 
         return result
+    
+
+    def extract_polyline_points(self, route_data:json, has_passLists: bool=False):
+        """API를 통해 얻어온 경로 정보(Json)에서 PolyLine(경로 좌표)를 추출하는 함수.
+
+        Args:
+            route_data (json): TMAP Mobility Api를 통해 수집한 경로 데이터
+            has_passLists (bool, optional):  경유지 존재 여부. Defaults to False.
+
+        Returns:
+            list[tuple]: 경로 좌표 정보(PolyLine) 리스트 
+        """
+
+        polyline_points = []
+        _features = route_data['features']
+        for _feature in _features:
+            _geometry = _feature['geometry']
+            if _geometry['type'] == 'LineString':
+                polyline_points.extend(_geometry['coordinates'])
+
+        return polyline_points
