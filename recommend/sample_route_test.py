@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import folium
 from streamlit_folium import folium_static
-from func.TMAP_API import get_route
+from recommend.func.archive.TMAP_API import get_route
 
 # # Tmap API 키 설정
 import os

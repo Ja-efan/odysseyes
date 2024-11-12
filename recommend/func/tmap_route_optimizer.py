@@ -42,18 +42,47 @@ class TMAPClient:
             }
         return {}
 
-    def get_route(self, start_poi: dict, end_poi: dict, via_points: list = []) -> dict:
-        """경로 최적화 API 호출"""
-        url = f'https://apis.openapi.sk.com/tmap/routes?version=1&appKey={self.api_key}'
-        data = {
-            'startX': start_poi['longitude'],
-            'startY': start_poi['latitude'],
-            'endX': end_poi['longitude'],
-            'endY': end_poi['latitude'],
-            'viaPoints': via_points
-        }
-        response = requests.post(url, json=data, verify=False)
+    def get_route_data(self, start: dict, end: dict, passList: list=None):
+        """TMap API를 이용한 경로 탐색 함수 
 
+        Args:
+            start (dict): _description_
+            end (dict): _description_
+            passList (list, optional): 경유지 좌표 리스트, 최대 5개 지원. Defaults to None.  
+                - 형식: 경유지1 X 좌표,경유지1 Y 좌표경유지2 X 좌표,경유지2 Y 좌표_...
+        """
+
+        # https://tmap-skopenapi.readme.io/reference/%EC%9E%90%EB%8F%99%EC%B0%A8-%EA%B2%BD%EB%A1%9C%EC%95%88%EB%82%B4
+        url = "https://apis.openapi.sk.com/tmap/routes?version=1&callback=function"
+
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "appKey": self.api_key
+        }
+
+        payload = {
+            "tollgateFareOption": 16,  # 16: 로직판단(기본값)
+            "roadType": 32,  # 32:가까운 도로(기본값)
+            "endX": end['longitude'],  # 목적지 X좌표 경도 
+            "endY": end['latitude'],  # 목적지 Y좌표 위도
+            "reqCoordType": "WGS84GEO",
+            "startX": start['longitude'],  # 출발지 X좌표 경도 
+            "startY": start['latitude'],  # 출발지 Y좌표 위도
+            "carType": 0,
+            "startName": "출발지",
+            "endName": "도착지",
+            "resCoordType": "WGS84GEO",
+            "sort": "index"
+        }
+
+        # 경유지가 존재하는 경우 
+        if passList:
+            print("passlist")
+            waypoints_str = "_".join([f"{wp['longitude']},{wp['latitude']}" for wp in passList])
+            payload["passList"] = waypoints_str
+
+        response = requests.post(url, json=payload, headers=headers)
         if response.status_code != 200:
             print(f"Error: Received status code {response.status_code} from TMAP API for route.")
             return {}
@@ -169,7 +198,7 @@ class RouteOptimizer:
         self.tmap_client = tmap_client
         self.place_data_manager = place_data_manager
 
-    def calculate_route_score(self, place_list: list, region: str) -> float:
+    def calculate_place_score(self, place_list: list, region: str) -> float:
         """경로 점수 계산"""
         scores = [float(self.place_data_manager.place_data[(self.place_data_manager.place_data['지역'] == region) &
                                                            (self.place_data_manager.place_data['목적지명'] == place)]['최종점수'].values[0]) 
@@ -300,7 +329,7 @@ class RouteOptimizer:
 
             # 축제 장소 제외한 추천 장소 리스트 
             # recommended_places = place_combination[:-1]
-            properties['routeScore'] = self.calculate_route_score(place_combination[:-1], region)
+            properties['routeScore'] = self.calculate_place_score(place_combination[:-1], region)
 
             result = {
                 'properties': properties,
