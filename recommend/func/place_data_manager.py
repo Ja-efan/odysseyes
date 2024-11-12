@@ -19,17 +19,28 @@ class PlaceDataManager:
 
         self.data_path = data_path
         self.place_data = pd.read_csv(data_path)
+        # 컬럼명 변경
+        self.place_data.rename(
+            columns={
+                '목적지명': 'name', 
+                '분류': 'category', 
+                '지역': 'region',
+                '위도': 'latitude', 
+                '경도':'longitude'
+            }, inplace=True)
     
     def get_filtered_places(self, region: str, category: str, top_k: int = 5) -> pd.DataFrame:
         """특정 지역과 카테고리에 맞는 상위 장소 필터링"""
-        filtered_data = self.place_data[(self.place_data['지역'] == region) & (self.place_data['분류'] == category)]
+        filtered_data = self.place_data[(self.place_data['region'] == region) & (self.place_data['category'] == category)]
         return filtered_data.nlargest(top_k, '최종점수')
     
     def generate_place_combinations(self, region: str, n: int = 3, k: int = 5) -> list:
         """카페와 식당에서 각각 1개, 나머지는 관광지에서 선택하여 조합 생성"""
-        cafe_list = self.get_filtered_places(region, '카페', k)['목적지명'].values
-        res_list = self.get_filtered_places(region, '식당', k)['목적지명'].values
-        land_list = self.get_filtered_places(region, '관광지', k)['목적지명'].values
+
+        # 장소 별 전체 정보를 넘기도록 코드 수정
+        cafe_list = self.get_filtered_places(region, '카페', k).to_dict("records")
+        res_list = self.get_filtered_places(region, '식당', k).to_dict("records")
+        land_list = self.get_filtered_places(region, '관광지', k).to_dict("records")
 
         combinations_list = []
         for cafe in cafe_list:

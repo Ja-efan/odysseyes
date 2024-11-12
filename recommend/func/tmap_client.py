@@ -102,6 +102,11 @@ class TMAPClient:
                 route_data = get_route_data(start, end, passList)
                 ```
         """
+        if start['latitude'] == None and start['longitude'] == None:
+            start = self.get_poi(start['name'])
+        
+        if end['latitude'] == None and end['longitude'] == None:
+            end = self.get_poi(end['name'])
 
         # https://tmap-skopenapi.readme.io/reference/%EC%9E%90%EB%8F%99%EC%B0%A8-%EA%B2%BD%EB%A1%9C%EC%95%88%EB%82%B4
         url = "https://apis.openapi.sk.com/tmap/routes?version=1&callback=function"
@@ -129,8 +134,8 @@ class TMAPClient:
 
         # 경유지가 존재하는 경우 
         if passList:
-            waypoints_str = "_".join([f"{wp['longitude']},{wp['latitude']}" for wp in passList])
-            payload["passList"] = waypoints_str
+            passList_str = ",".join([f"{pl['longitude']},{pl['latitude']}" for pl in passList])
+            payload["passList"] = passList_str
 
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code != 200:
