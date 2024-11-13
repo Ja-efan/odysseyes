@@ -149,16 +149,12 @@ class RouteOptimizer:
         best_score = 0
         best_route = None
 
-        print(f'출발지 제외 경유지 순열: {list(all_routes)}')   
-        # print(f"routes_data:")
-        # print_json(routes_data)
+        # print(f'출발지 제외 경유지 순열: {list(all_routes)}')   
 
         for route in all_routes:
-            # print(route)
             route = (0,) + route + (0,)  # 출발지(0)를 추가해 순환 경로 형성
-            print(route)
             score = round(self.calculate_route_score(route, routes_data), 4)
-            print(f'{route}: {score}')
+            # print(f'{route}: {score}')
             if score > best_score:
                 best_score = score
                 best_route = route
@@ -168,7 +164,7 @@ class RouteOptimizer:
     
     def get_top_k_routes_tsp(self, start_place: str, end_place: str, region: str, festival_place: str, 
                          comb: int = 2, comb_k: int = 5, top_k: int = 3) -> list:
-        """_summary_
+        """자체 TSP 알고리즘을 활용한 축제 중심 여행 경로 추천 함수.
 
         Args:
             start_place (str): _description_
@@ -189,9 +185,9 @@ class RouteOptimizer:
 
         # 장소 조합 별 경유지 순서 최적화 진행 
         for p, places in enumerate(place_combinations):
-            places = self.add_start_and_festival_places(places=places, start=start_place, festival_place=festival_place)
-            
 
+            places = self.add_start_and_festival_places(places=places, start=start_place, festival_place=festival_place)
+        
             routes_for_place_comb = dict()
 
             for i, src in enumerate(places):
@@ -208,19 +204,48 @@ class RouteOptimizer:
             start = places[best_route[0]]
             end = places[best_route[-1]]
             passList = [places[pl] for pl in best_route[1:-1]]
-
             optimal_route = self.tmap_client.get_route_data(start=start, end=end, passList=passList)
+            
+            # print_json(optimal_route)
+
+            
+            _properties = optimal_route['features'][0]['properties']
+            properties = {
+                'totalDistance': _properties['totalDistance'],
+                'totalTime': _properties['totalTime'],
+                'totalFare': _properties['totalFare'],
+                'routeScore': best_score
+            }
+
+            points = []
+            coordinates = []
+            pointType_list = ['S', 'E', 'B1', 'B2', 'B3']
+            for _feature in optimal_route['features']:
+                if ('description' not in _feature['properties'].keys()) or _feature['properties']['description'] == '경유지와 연결된 가상의 라인입니다':
+                    continue
+                _geometry = _feature['geometry']
+                if _geometry['type'] == 'Point' and _feature['properties']['pointType'] in pointType_list:
+                    point = defaultdict(str)
+                    point['pointId'] = _feature['properties']['pointIndex']
+                    point['pointLatitude'] = _geometry['coordinates'][1]  # 위도
+                    point['pointLongitude'] = _geometry['coordinates'][0]  # 경도 
+                    points.append(point)
+
+                elif _geometry['type'] == 'LineString':
+                    coordinates.extend(_geometry['coordinates'])
+
 
             # 현재 장소 조합에 대한 경유지 순서 최적화 경로 데이터
             best_route_dict = {
-                'route_score': best_score,
-                'route_data': optimal_route
+                'properties': properties,
+                'points': points,
+                'lineCoordinates': coordinates
             }
-
+            
             best_routes_for_each_place_comb.append(best_route_dict)
 
         # route_score 기준 내림차순 정렬
-        best_routes_for_each_place_comb.sort(key=lambda x: x['route_score'], reverse=True)
+        best_routes_for_each_place_comb.sort(key=lambda x: x['properties']['routeScore'], reverse=True)
 
         return best_routes_for_each_place_comb[:top_k]
 
@@ -228,7 +253,20 @@ class RouteOptimizer:
     
     def get_top_k_routes(self, start_place: str, end_place: str, region: str, festival_place: str, 
                          comb: int = 2, comb_k: int = 5, top_k: int = 3) -> list:
-        """상위 k개의 최적 경로를 반환"""
+        """TMAP 경유지 순서 최적화 API를 활용한 여행 경로 추천 함수.
+
+        Args:
+            start_place (str): _description_
+            end_place (str): _description_
+            region (str): _description_
+            festival_place (str): _description_
+            comb (int, optional): _description_. Defaults to 2.
+            comb_k (int, optional): _description_. Defaults to 5.
+            top_k (int, optional): _description_. Defaults to 3.
+
+        Returns:
+            list: _description_
+        """
         place_combinations = self.place_data_manager.generate_place_combinations(region, comb, comb_k)
         
         # place_data_manager.search_poi() 로직 추가 
@@ -253,7 +291,7 @@ class RouteOptimizer:
         for place_combination in place_combinations:
             via_pois = []
             place_combination = place_combination + [festival_place]
-            print(place_combination)
+            # print(place_combination)
             for j, via_point_name in enumerate(place_combination):
                 via_poi = self.tmap_client.get_poi(via_point_name, region)
                 if not via_poi: continue 
