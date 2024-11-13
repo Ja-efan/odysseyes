@@ -1,5 +1,6 @@
 import os 
 import json 
+from typing import Union
 
 def print_json(data:json):
     """json 형태의 데이터를 출력하는 함수입니다.
@@ -9,6 +10,18 @@ def print_json(data:json):
     """
     pretty_json = json.dumps(data, indent=4, ensure_ascii=False)
     print(pretty_json)
+
+
+def save_json(data: Union[dict, list], file_name: str):
+    """JSON 데이터를 파일에 저장하는 함수입니다.
+
+    Args:
+        data (dict): 저장할 JSON 데이터
+        file_name (str): 저장할 파일 이름 (예: "data.json")
+    """
+    with open(file_name, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
+    print(f"Data saved to {file_name}")
 
 
 def find_target_directory(target_dir_name):
