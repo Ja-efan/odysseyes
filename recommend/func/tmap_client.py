@@ -1,12 +1,8 @@
-import os
-import sys
 from dotenv import load_dotenv
 import requests
 import json
-from .tools import print_json
-
-
 import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
