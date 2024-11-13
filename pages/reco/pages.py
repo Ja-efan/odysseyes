@@ -33,7 +33,7 @@ place_data_manager = PlaceDataManager(file_name="추천장소통합리스트.csv
 route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
 #########################################################################################
 
-DEBUG = False
+DEBUG = True
 
 def calculate_distance(coord1, coord2):
     # 유클리드 거리 계산
@@ -194,7 +194,7 @@ def recommend_page():
     import json
     if DEBUG:
         # sample_file_name = 'sample_top3_optimized_routes.json'
-        sample_file_name = 'top_routes.json'
+        sample_file_name = 'tsp_top_routes.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
         with open(sample_data_path, 'r') as f:
             data = json.load(f)
