@@ -3,6 +3,7 @@ import sys
 from dotenv import load_dotenv
 import requests
 import json
+from .tools import print_json
 
 
 import urllib3
@@ -18,6 +19,7 @@ class TMAPClient:
             api_key (str): _description_
         """
         self.api_key = api_key
+
 
     def get_poi(self, keyword: str, region: str = None) -> dict:
         """키워드를 이용해 POI(Point of Interest) 정보를 가져오는 함수.
@@ -66,6 +68,7 @@ class TMAPClient:
                 'name': first_poi['name']
             }
         return {}
+    
 
     def get_route_data(self, start: dict, end: dict, passList: list=None):
         """TMap API를 이용한 경로 탐색 함수.
@@ -102,9 +105,11 @@ class TMAPClient:
                 route_data = get_route_data(start, end, passList)
                 ```
         """
+        # 출발지 위/경도 데이터가 없는 경우 
         if start['latitude'] == None and start['longitude'] == None:
             start = self.get_poi(start['name'])
         
+        # 최종 도착지 위/경도 데이터가 없는 경우
         if end['latitude'] == None and end['longitude'] == None:
             end = self.get_poi(end['name'])
 
@@ -118,29 +123,37 @@ class TMAPClient:
         }
 
         payload = {
-            "tollgateFareOption": 16,  # 16: 로직판단(기본값)
-            "roadType": 32,  # 32:가까운 도로(기본값)
-            "endX": end['longitude'],  # 목적지 X좌표 경도 
-            "endY": end['latitude'],  # 목적지 Y좌표 위도
+            "tollgateFareOption": 16,  # 16: 로직판단(default)
+            "roadType": 32,  # 32:가까운 도로(default)
+            "endX": float(end['longitude']),  # 목적지 X좌표 (경도)
+            "endY": float(end['latitude']),  # 목적지 Y좌표 (위도)
             "reqCoordType": "WGS84GEO",
-            "startX": start['longitude'],  # 출발지 X좌표 경도 
-            "startY": start['latitude'],  # 출발지 Y좌표 위도
+            "startX": float(start['longitude']),  # 출발지 X좌표 (경도) 
+            "startY": float(start['latitude']),  # 출발지 Y좌표 (위도)
             "carType": 0,
-            "startName": "출발지",
-            "endName": "도착지",
+            "startName": start['name'],
+            "endName": end['name'],
             "resCoordType": "WGS84GEO",
             "sort": "index"
         }
 
         # 경유지가 존재하는 경우 
         if passList:
-            passList_str = ",".join([f"{pl['longitude']},{pl['latitude']}" for pl in passList])
+            passList_lst = []
+            for pl in passList:
+                if pl['latitude'] == None and pl['longitude'] == None:
+                    pl = self.get_poi(keyword=pl['name'])
+                
+                passList_lst.append(f"{str(pl['longitude'])},{str(pl['latitude'])}")
+
+            passList_str = "_".join(passList_lst)
             payload["passList"] = passList_str
 
         response = requests.post(url, json=payload, headers=headers)
+
         if response.status_code != 200:
             print(f"Error: Received status code {response.status_code} from TMAP API for route.")
-            return {}
+            return response.json()
 
         try:
             return response.json()
@@ -149,8 +162,9 @@ class TMAPClient:
             print("Response content:", response.text)  # 응답 내용을 출력해 문제를 확인합니다.
             return {}
 
+
     def get_optimized_route(self, start_poi:dict, end_poi:dict, via_pois: list = []) -> dict:
-        """경유지 최적화 API 호출"""
+        """경유지 순서 최적화 API 호출"""
         routeOptimization = 10
         url = f'https://apis.openapi.sk.com/tmap/routes/routeOptimization{routeOptimization}?version=1&format=json'
 
