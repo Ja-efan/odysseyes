@@ -11,16 +11,22 @@ sys.path.append(PROJECT_ROOT_PATH)
 RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
-from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer
+# from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer  # old 
+
+from recommend.func.tmap_client import TMAPClient
+from recommend.func.place_data_manager import PlaceDataManager
+from recommend.func.route_optimizer import RouteOptimizer
 
 from dotenv import load_dotenv
+
 load_dotenv()
 api_key = os.getenv('SK_OPEN_API_KEY')
+
 tmap_client = TMAPClient(api_key)
-place_data_manager = PlaceDataManager(data_path="추천장소통합리스트.csv")
+place_data_manager = PlaceDataManager(file_name="추천장소통합리스트.csv")
 route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
 
+DEBUG = True
 
 from collections import defaultdict 
 
@@ -48,7 +54,6 @@ def load_image(image_file):
 closest_location = 'OD'
 # PIN_IMG = r"./pages/reco/img/location-pin.png"
 PIN_IMG = os.path.join(module_dir, 'img', 'location-pin.png')
-DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
 
@@ -206,8 +211,8 @@ def recommend_page():
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
 
-            # # func.TMAP_API.get_my_topk_optimized_routes
-            # data = get_my_topk_optimized_routes(
+            # # old 
+            # data = route_optimizer.get_top_k_routes(
             #     start_place=st.session_state['origin'],
             #     end_place=st.session_state['origin'],
             #     selected_region=st.session_state["selected_sigungu"],
@@ -217,7 +222,8 @@ def recommend_page():
             #     topk=3
             # )
 
-            data = route_optimizer.get_top_k_routes(
+            # new @241113
+            data = route_optimizer.get_top_k_routes_tsp(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
                 selected_region=st.session_state["selected_sigungu"],
@@ -226,6 +232,7 @@ def recommend_page():
                 comb_k=5,
                 topk=3
             )
+            
             with open(r'..\recommend\data\my_route_sample2.json', 'w') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
     st.session_state['route'] = data
