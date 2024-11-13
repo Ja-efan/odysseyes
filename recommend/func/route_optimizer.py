@@ -3,8 +3,8 @@ import pandas as pd
 from collections import OrderedDict, defaultdict
 from sklearn.preprocessing import MinMaxScaler
 
-from .tmap_client import TMAPClient  # new 
-from .place_data_manager import PlaceDataManager  # new
+from recommend.func.tmap_client import TMAPClient  # new 
+from recommend.func.place_data_manager import PlaceDataManager  # new
 
 # from tmap_route_optimizer import PlaceDataManager, TMAPClient  # old 
 
@@ -189,25 +189,32 @@ class RouteOptimizer:
 
         # 장소 조합 별 경유지 순서 최적화 진행 
         for p, places in enumerate(place_combinations):
-            places = self.add_start_and_festival_places(place=places, start=start_place, festival_place=festival_place)
+            places = self.add_start_and_festival_places(places=places, start=start_place, festival_place=festival_place)
             
+
             routes_for_place_comb = dict()
 
-            for i, start in enumerate(places):
-                for j, end in enumerate(places):
+            for i, src in enumerate(places):
+                for j, dst in enumerate(places):
                     if i != j:
-                        routes_for_place_comb[(i, j)] = self.fetch_route_data(start=start, end=end)
+                        routes_for_place_comb[(i, j)] = self.fetch_route_data(start=src, end=dst)
             
             # 정규화된 Properties를 추가
             routes_for_place_comb = self.get_scaled_properties(routes=routes_for_place_comb)
 
-            # 출발지에서 시작하여 모든 장소를 방문 후 출발지로 돌아오는 최적 경로 탐색
+            # 출발지에서 시작하여 모든 장소를 방문 후 출발지로 돌아오는 최적 경로 탐색 
             best_route, best_score = self.find_optimal_route(places=places, routes_data=routes_for_place_comb)
+
+            start = places[best_route[0]]
+            end = places[best_route[-1]]
+            passList = [places[pl] for pl in best_route[1:-1]]
+
+            optimal_route = self.tmap_client.get_route_data(start=start, end=end, passList=passList)
 
             # 현재 장소 조합에 대한 경유지 순서 최적화 경로 데이터
             best_route_dict = {
                 'route_score': best_score,
-                'route_data': best_route
+                'route_data': optimal_route
             }
 
             best_routes_for_each_place_comb.append(best_route_dict)
@@ -275,7 +282,7 @@ class RouteOptimizer:
             result = dict()
             points = []  # 장소 정보 리스트 
             paths = []  # 경로 정보 리스트 
-            places = []
+            # places = []
             coordinates = []
             for feature in features:
                 _geometry = feature['geometry']
@@ -287,7 +294,7 @@ class RouteOptimizer:
                     _point['pointLatitude'] = feature['geometry']['coordinates'][1]  # 위도
                     _point['pointLongitude']= feature['geometry']['coordinates'][0]  # 경도 
                     points.append(_point)
-                    places.append(_point['pointName'])
+                    # places.append(_point['pointName'])
 
                 elif _geometry['type'] == 'LineString':
                     _path = defaultdict(str)

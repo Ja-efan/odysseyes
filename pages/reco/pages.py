@@ -1,6 +1,13 @@
 import os
 import sys
+import streamlit as st
+import folium
+from streamlit_folium import st_folium
+import base64
+import math
+from dotenv import load_dotenv
 
+##################################### project modules ###################################   
 # 현재 모듈 파일의 디렉터리 경로를 가져옴
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,36 +18,22 @@ sys.path.append(PROJECT_ROOT_PATH)
 RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-# from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer  # old 
-
 from recommend.func.tmap_client import TMAPClient
 from recommend.func.place_data_manager import PlaceDataManager
 from recommend.func.route_optimizer import RouteOptimizer
-
-from dotenv import load_dotenv
+from func import search
+#########################################################################################
 
 load_dotenv()
 api_key = os.getenv('SK_OPEN_API_KEY')
 
+################################ route optimizer instances ##############################
 tmap_client = TMAPClient(api_key)
 place_data_manager = PlaceDataManager(file_name="추천장소통합리스트.csv")
 route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
+#########################################################################################
 
-DEBUG = True
-
-from collections import defaultdict 
-
-# from importlib import reload
-from func import search
-
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
-
-import streamlit as st
-import base64
-
-import math
+DEBUG = False
 
 def calculate_distance(coord1, coord2):
     # 유클리드 거리 계산
@@ -189,8 +182,6 @@ def select_page():
             else:
                 st.write("먼저 장소를 선택해주세요.")
 
-
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
 
 def recommend_page():
     # 페이지 제목
