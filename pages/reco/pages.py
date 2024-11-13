@@ -1,6 +1,13 @@
 import os
 import sys
+import streamlit as st
+import folium
+from streamlit_folium import st_folium
+import base64
+import math
+from dotenv import load_dotenv
 
+##################################### project modules ###################################   
 # 현재 모듈 파일의 디렉터리 경로를 가져옴
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,30 +18,22 @@ sys.path.append(PROJECT_ROOT_PATH)
 RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
-from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer
+from recommend.func.tmap_client import TMAPClient
+from recommend.func.place_data_manager import PlaceDataManager
+from recommend.func.route_optimizer import RouteOptimizer
+from func import search
+#########################################################################################
 
-from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv('SK_OPEN_API_KEY')
+
+################################ route optimizer instances ##############################
 tmap_client = TMAPClient(api_key)
-place_data_manager = PlaceDataManager(data_path="추천장소통합리스트.csv")
+place_data_manager = PlaceDataManager(file_name="추천장소통합리스트.csv")
 route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
+#########################################################################################
 
-
-from collections import defaultdict 
-
-# from importlib import reload
-from func import search
-
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
-
-import streamlit as st
-import base64
-
-import math
+DEBUG = True
 
 def calculate_distance(coord1, coord2):
     # 유클리드 거리 계산
@@ -48,7 +47,6 @@ def load_image(image_file):
 closest_location = 'OD'
 # PIN_IMG = r"./pages/reco/img/location-pin.png"
 PIN_IMG = os.path.join(module_dir, 'img', 'location-pin.png')
-DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
 
@@ -185,8 +183,6 @@ def select_page():
                 st.write("먼저 장소를 선택해주세요.")
 
 
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
-
 def recommend_page():
     # 페이지 제목
     st.title("이렇게 가볼까요?")
@@ -198,7 +194,7 @@ def recommend_page():
     import json
     if DEBUG:
         # sample_file_name = 'sample_top3_optimized_routes.json'
-        sample_file_name = 'top_routes.json'
+        sample_file_name = 'tsp_top_routes.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
         with open(sample_data_path, 'r') as f:
             data = json.load(f)
@@ -206,8 +202,8 @@ def recommend_page():
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
 
-            # # func.TMAP_API.get_my_topk_optimized_routes
-            # data = get_my_topk_optimized_routes(
+            # # old 
+            # data = route_optimizer.get_top_k_routes(
             #     start_place=st.session_state['origin'],
             #     end_place=st.session_state['origin'],
             #     selected_region=st.session_state["selected_sigungu"],
@@ -217,7 +213,8 @@ def recommend_page():
             #     topk=3
             # )
 
-            data = route_optimizer.get_top_k_routes(
+            # new @241113
+            data = route_optimizer.get_top_k_routes_tsp(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
                 selected_region=st.session_state["selected_sigungu"],
@@ -226,6 +223,7 @@ def recommend_page():
                 comb_k=5,
                 topk=3
             )
+            
             with open(r'..\recommend\data\my_route_sample2.json', 'w') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
     st.session_state['route'] = data
