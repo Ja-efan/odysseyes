@@ -7,8 +7,6 @@ from sklearn.preprocessing import MinMaxScaler
 from recommend.func.tmap_client import TMAPClient  # new 
 from recommend.func.place_data_manager import PlaceDataManager  # new
 
-# from tmap_route_optimizer import PlaceDataManager, TMAPClient  # old 
-
 
 class RouteOptimizer:
     """경로 최적화를 수행하고 상위 경로를 반환하는 클래스"""
@@ -150,12 +148,16 @@ class RouteOptimizer:
         best_score = 0
         best_route = None
 
-        # print(f'출발지 제외 경유지 순열: {list(all_routes)}')   
+        print(f'출발지 제외 경유지 순열: {list(all_routes)}')   
+        # print(f"routes_data:")
+        # print_json(routes_data)
 
         for route in all_routes:
+            # print(route)
             route = (0,) + route + (0,)  # 출발지(0)를 추가해 순환 경로 형성
+            # print(route)
             score = round(self.calculate_route_score(route, routes_data), 4)
-            # print(f'{route}: {score}')
+            print(f'{route}: {score}')
             if score > best_score:
                 best_score = score
                 best_route = route
@@ -165,7 +167,7 @@ class RouteOptimizer:
     
     def get_top_k_routes_tsp(self, start_place: str, end_place: str, region: str, festival_place: str, 
                          comb: int = 2, comb_k: int = 5, top_k: int = 3) -> list:
-        """자체 TSP 알고리즘을 활용한 축제 중심 여행 경로 추천 함수.
+        """_summary_
 
         Args:
             start_place (str): _description_
@@ -186,9 +188,9 @@ class RouteOptimizer:
 
         # 장소 조합 별 경유지 순서 최적화 진행 
         for p, places in enumerate(place_combinations):
-
             places = self.add_start_and_festival_places(places=places, start=start_place, festival_place=festival_place)
-        
+            
+
             routes_for_place_comb = dict()
 
             for i, src in enumerate(places):
@@ -220,25 +222,40 @@ class RouteOptimizer:
 
             points = []
             coordinates = []
-
             # 장소 안내 지점 유형
-            # pointType_list = ['S', 'E', 'B1', 'B2', 'B3']
             pointType_pattern = r'^(S|E|B\d*)$'  # S(출발지), E(경유지), B*(경유지)
+            startPoint_pattern = 'S'
+            endPoint_pattern = 'E'
+            passList_pattern = r'^(B\d*)$'
 
-            pointName_index = 0
+            places_index = 0
             for _feature in optimal_route['features']:
                 if ('description' not in _feature['properties'].keys()) or _feature['properties']['description'] == '경유지와 연결된 가상의 라인입니다':
                     continue
                 _geometry = _feature['geometry']
-                if _geometry['type'] == 'Point' and re.match(pointType_pattern, _feature['properties']['pointType']):
-                    point = defaultdict(str)
-                    point['pointId'] = _feature['properties']['pointIndex']
-                    point['pointName'] =  places[pointName_index % len(places)]['name']  # 장소명 
-                    point['pointLatitude'] = _geometry['coordinates'][1]  # 위도
-                    point['pointLongitude'] = _geometry['coordinates'][0]  # 경도 
-                    points.append(point)
-                    pointName_index += 1
+                # point_type = _feature['properties']['pointType']
+                # if _geometry['type'] == 'Point' and re.match(pointType_pattern, _feature['properties']['pointType']):
+                if _geometry['type'] == 'Point':
+                    point_type = _feature['properties']['pointType']
+                    if (point_type == startPoint_pattern) or (point_type == endPoint_pattern) or (re.match(passList_pattern, point_type)):
+                        point = defaultdict(str)
+                        point['pointId'] = _feature['properties']['pointIndex']
+                        point['pointName'] =  places[places_index % len(places)]['name']  # 장소명 
+                        point['pointLatitude'] = _geometry['coordinates'][1]  # 위도
+                        point['pointLongitude'] = _geometry['coordinates'][0]  # 경도 
 
+                        if point_type == startPoint_pattern:
+                            point['pointType'] = 'S'
+                        elif point_type == endPoint_pattern:
+                            point['pointType'] = 'E'
+                        elif re.match(passList_pattern, point_type):
+                            point['pointType'] = places[places_index % len(places)]['category']
+                        else: 
+                            point['pointType'] = '축제 장소'
+
+
+                        points.append(point)
+                        places_index += 1
                 elif _geometry['type'] == 'LineString':
                     coordinates.extend(_geometry['coordinates'])
 
