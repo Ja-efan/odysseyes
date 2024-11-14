@@ -196,7 +196,7 @@ def recommend_page():
         # sample_file_name = 'sample_top3_optimized_routes.json'
         sample_file_name = 'tsp_top_routes.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
-        with open(sample_data_path, 'r') as f:
+        with open(sample_data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
     else:
         if len(st.session_state['route']) == 0:
@@ -249,7 +249,11 @@ def recommend_page():
 
     selected_route = st.session_state['route'][selected_route_index]
     route_points = selected_route['points']
+
+    # 장소 좌표 (출발지 - (축제장소, 추천장소) - 도착지(출발지)) 
     points_coordinates = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+
+    # 경로 시각화를 위한 좌표 추출
     line_coordinates = [(coord[1], coord[0]) for coord in selected_route['lineCoordinates']]
     color = colors[selected_route_index % len(colors)]
 
@@ -304,4 +308,10 @@ def recommend_page():
     # 선택된 경로에 대한 정보 표시
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
     for order, point in enumerate(selected_route['points']):
-        st.write(f"{order + 1}. {point['pointName']}")
+        if order == 0 :
+            point_type = '출발지'
+        elif order == len(selected_route['points']):
+            point_type = '도착지'
+        else: 
+            point_type = '경유지'
+        st.write(f"{order + 1}. {point_type}: {point['pointName']}")
