@@ -79,7 +79,7 @@ def search_page():
         st.session_state['page'] = 'select'
         st.rerun()
     
-    st.warning("본 버전은 데모 버전입니다. '대전 덕명동 515-3'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
+    st.warning("본 버전은 데모 버전입니다. '대전 서구 월평동 1216'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
 
 def select_page():
     global closest_location
