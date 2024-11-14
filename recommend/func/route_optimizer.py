@@ -220,6 +220,7 @@ class RouteOptimizer:
             points = []
             coordinates = []
             pointType_list = ['S', 'E', 'B1', 'B2', 'B3']
+            pointName_index = 0
             for _feature in optimal_route['features']:
                 if ('description' not in _feature['properties'].keys()) or _feature['properties']['description'] == '경유지와 연결된 가상의 라인입니다':
                     continue
@@ -227,10 +228,12 @@ class RouteOptimizer:
                 if _geometry['type'] == 'Point' and _feature['properties']['pointType'] in pointType_list:
                     point = defaultdict(str)
                     point['pointId'] = _feature['properties']['pointIndex']
+                    point['pointName'] =  places[pointName_index % len(places)]['name']  # 장소명 
                     point['pointLatitude'] = _geometry['coordinates'][1]  # 위도
                     point['pointLongitude'] = _geometry['coordinates'][0]  # 경도 
                     points.append(point)
-
+                    pointName_index += 1
+                    
                 elif _geometry['type'] == 'LineString':
                     coordinates.extend(_geometry['coordinates'])
 
