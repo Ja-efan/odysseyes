@@ -53,6 +53,7 @@ DEBUG = True
 loc_base64 = load_image(PIN_IMG)
 
 def search_page():
+    space_html = '<p style=color:White; font-size: 12px;">.</p>'
     # 페이지 제목
     st.title("OD로 갈까요?")
 
@@ -62,7 +63,7 @@ def search_page():
         st.session_state['origin'] = st.text_input("", key="origin_input")
 
     with c2:
-        st.write(".")
+        st.markdown(space_html, unsafe_allow_html=True)
         st.write("에서")
 
     c1, c2 = st.columns([1, 4])
@@ -73,7 +74,7 @@ def search_page():
             st.session_state["search_query"] = search_input[1:]
 
     with c2:
-        st.write(".")
+        st.markdown(space_html, unsafe_allow_html=True)
         st.write("로 여행가기")
 
     if st.button("seYES!!"):
