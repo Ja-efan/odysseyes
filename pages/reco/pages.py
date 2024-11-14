@@ -7,6 +7,7 @@ import base64
 import math
 from dotenv import load_dotenv
 
+
 ##################################### project modules ###################################   
 # 현재 모듈 파일의 디렉터리 경로를 가져옴
 module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,7 @@ sys.path.append(RECOMMEND_SYS_PATH)
 from recommend.func.tmap_client import TMAPClient
 from recommend.func.place_data_manager import PlaceDataManager
 from recommend.func.route_optimizer import RouteOptimizer
+from recommend.func.tools import *
 from func import search
 #########################################################################################
 
@@ -202,18 +204,6 @@ def recommend_page():
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
 
-            # # old 
-            # data = route_optimizer.get_top_k_routes(
-            #     start_place=st.session_state['origin'],
-            #     end_place=st.session_state['origin'],
-            #     selected_region=st.session_state["selected_sigungu"],
-            #     selected_festival_place=st.session_state["dest_addr"],
-            #     comb=2,
-            #     comb_k=5,
-            #     topk=3
-            # )
-
-            # new @241113
             data = route_optimizer.get_top_k_routes_tsp(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
@@ -288,8 +278,9 @@ def recommend_page():
         st.warning("유효한 경로 좌표가 없습니다.")
     
 
-    # 선택된 경로의 각 점에 마커 추가
-    for order, point in enumerate(route_points):
+    # 선택된 경로의 각 점에 마커 추가 (index 값을 기준으로 정렬하여 표시)
+    for order, point in sorted(enumerate(route_points), key=lambda x: x[1].get('index', x[0])):
+        print(point['pointName'], point['pointId'], order+1)
         folium.Marker(
             location=(point['pointLatitude'], point['pointLongitude']),
             icon=folium.DivIcon(
@@ -305,13 +296,23 @@ def recommend_page():
     # Folium 지도 출력
     st_folium(st.session_state.m, width=700, height=500)
 
-    # 선택된 경로에 대한 정보 표시
+    
+    ############################# 선택된 경로에 대한 정보 표시  #############################
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
-    for order, point in enumerate(selected_route['points']):
+
+    # # 경로 정보 (거리, 시간, 요금) 출력
+    st.write(f"- 총 이동 거리 :  {round(selected_route['properties']['totalDistance'] / 1e3, 2)} km")
+    st.write(f"- 총 이동 시간 :  {format_time(selected_route['properties']['totalTime'])}")
+    st.write(f"- 총 이동 비용 :  {selected_route['properties']['totalFare']} 원")
+
+    st.markdown(f"---")
+    
+    for order, point in enumerate(route_points):
         if order == 0 :
             point_type = '출발지'
-        elif order == len(selected_route['points']):
+        elif order == len(selected_route['points'])-1:
             point_type = '도착지'
         else: 
             point_type = '경유지'
+        
         st.write(f"{order + 1}. {point_type}: {point['pointName']}")
