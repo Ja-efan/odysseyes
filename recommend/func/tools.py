@@ -24,6 +24,29 @@ def save_json(data: Union[dict, list], file_name: str):
     print(f"Data saved to {file_name}")
 
 
+def load_json(file_path):
+    """
+    Load JSON data from a file and return it as a Python dictionary.
+    
+    Parameters:
+        file_path (str): Path to the JSON file.
+        
+    Returns:
+        dict: JSON data as a Python dictionary.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        print(f"Error: The file {file_path} was not found.")
+    except json.JSONDecodeError:
+        print("Error: Failed to decode JSON. Please check the file format.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
+
 def find_target_directory(target_dir_name):
     current_path = os.getcwd()
     while True:
