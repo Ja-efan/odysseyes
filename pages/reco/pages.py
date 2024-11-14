@@ -196,7 +196,7 @@ def recommend_page():
     import json
     if DEBUG:
         # sample_file_name = 'sample_top3_optimized_routes.json'
-        sample_file_name = 'tsp_top_routes.json'
+        sample_file_name = 'tsp_top_routes3.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
         with open(sample_data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -278,8 +278,9 @@ def recommend_page():
         st.warning("유효한 경로 좌표가 없습니다.")
     
 
-    # 선택된 경로의 각 점에 마커 추가
-    for order, point in enumerate(route_points):
+    # 선택된 경로의 각 점에 마커 추가 (index 값을 기준으로 정렬하여 표시)
+    for order, point in sorted(enumerate(route_points), key=lambda x: x[1].get('index', x[0])):
+        print(point['pointName'], point['pointId'], order+1)
         folium.Marker(
             location=(point['pointLatitude'], point['pointLongitude']),
             icon=folium.DivIcon(
@@ -300,27 +301,18 @@ def recommend_page():
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
 
     # # 경로 정보 (거리, 시간, 요금) 출력
-    st.write(f"- 이동 거리: {selected_route['properties']['totalDistance'] / 1e3}km")
-    st.write(f"- 이동 소요 시간: {format_time(selected_route['properties']['totalTime'])}")
-    st.write(f"- 비용: {selected_route['properties']['totalFare']}원")
+    st.write(f"- 총 이동 거리 :  {round(selected_route['properties']['totalDistance'] / 1e3, 2)} km")
+    st.write(f"- 총 이동 시간 :  {format_time(selected_route['properties']['totalTime'])}")
+    st.write(f"- 총 이동 비용 :  {selected_route['properties']['totalFare']} 원")
 
     st.markdown(f"---")
-
-    # st.markdown(f"""
-    #     <div style="padding-left: 20px;">
-    #         이동 거리: {round(selected_route['properties']['totalDistance'] / 1e3, 2)}km  
-    #         <br>
-    #         이동 소요 시간: {format_time(selected_route['properties']['totalTime'])}  
-    #         <br>
-    #         비용: {selected_route['properties']['totalFare']}원
-    #     </div>
-    #     """, unsafe_allow_html=True)
     
-    for order, point in enumerate(selected_route['points']):
+    for order, point in enumerate(route_points):
         if order == 0 :
             point_type = '출발지'
-        elif order == len(selected_route['points']):
+        elif order == len(selected_route['points'])-1:
             point_type = '도착지'
         else: 
             point_type = '경유지'
+        
         st.write(f"{order + 1}. {point_type}: {point['pointName']}")
