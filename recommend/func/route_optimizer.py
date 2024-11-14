@@ -1,4 +1,5 @@
 from itertools import permutations
+import re
 import pandas as pd
 from collections import OrderedDict, defaultdict
 from sklearn.preprocessing import MinMaxScaler
@@ -219,13 +220,17 @@ class RouteOptimizer:
 
             points = []
             coordinates = []
-            pointType_list = ['S', 'E', 'B1', 'B2', 'B3']
+
+            # 장소 안내 지점 유형
+            # pointType_list = ['S', 'E', 'B1', 'B2', 'B3']
+            pointType_pattern = r'^(S|E|B\d*)$'  # S(출발지), E(경유지), B*(경유지)
+
             pointName_index = 0
             for _feature in optimal_route['features']:
                 if ('description' not in _feature['properties'].keys()) or _feature['properties']['description'] == '경유지와 연결된 가상의 라인입니다':
                     continue
                 _geometry = _feature['geometry']
-                if _geometry['type'] == 'Point' and _feature['properties']['pointType'] in pointType_list:
+                if _geometry['type'] == 'Point' and re.match(pointType_pattern, _feature['properties']['pointType']):
                     point = defaultdict(str)
                     point['pointId'] = _feature['properties']['pointIndex']
                     point['pointName'] =  places[pointName_index % len(places)]['name']  # 장소명 
@@ -233,7 +238,7 @@ class RouteOptimizer:
                     point['pointLongitude'] = _geometry['coordinates'][0]  # 경도 
                     points.append(point)
                     pointName_index += 1
-                    
+
                 elif _geometry['type'] == 'LineString':
                     coordinates.extend(_geometry['coordinates'])
 
