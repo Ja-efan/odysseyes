@@ -196,7 +196,7 @@ def recommend_page():
     import json
     if DEBUG:
         # sample_file_name = 'sample_top3_optimized_routes.json'
-        sample_file_name = 'tsp_top_routes3.json'
+        sample_file_name = 'tsp_top_routes.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
         with open(sample_data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
