@@ -1,14 +1,9 @@
-import folium
 import streamlit as st
 from streamlit_folium import folium_static
 
 from func.map_vis import bj_navi, togo_count, not_togo_count, fest_togo_count, fest_not_togo_count, fest_visit_count, wkd_visit_count, nationwide_plot
 
 
-# 지도 생성을 위한 함수
-def create_map(location, zoom_start=13):
-    m = folium.Map(location=location, zoom_start=zoom_start)
-    return m
 
 # 열 수를 정의 (그리드 형태로 표시하기 위해)
 num_columns1 = 1  # 예시로 2개의 열로 설정

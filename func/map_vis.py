@@ -20,6 +20,7 @@ theme="cartodbpositron"
 attr=""
 
 
+
 def bj_navi(gb):
     ## 목적지 분류 별 방문건수 시각화_공주시 데이터
     # 데이터 로드
