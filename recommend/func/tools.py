@@ -67,3 +67,23 @@ def find_target_directory(target_dir_name):
 
 def get_project_root_path(proejct_directory_name: str='odysseyes'):
     return  find_target_directory(target_dir_name=proejct_directory_name)
+
+
+def format_time(total_seconds: int) -> str:
+    """초 단위의 소요 시간을 'h시간 m분' 형식으로 변환하는 함수.
+
+    Args:
+        total_seconds (int): 소요 시간(초 단위)
+
+    Returns:
+        str: 'h시간 m분' 형식의 문자열
+    """
+    total_minutes = total_seconds // 60  # 초를 분으로 변환
+    hours = total_minutes // 60  # 시간 계산
+    minutes = total_minutes % 60  # 남은 분 계산
+    if hours > 0:
+        # print(f"")
+        # print(total_minutes)
+        return f"{hours}시간 {minutes}분" if minutes > 0 else f"{hours}시간"
+    else:
+        return f"{minutes}분"
