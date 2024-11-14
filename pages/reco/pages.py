@@ -7,6 +7,7 @@ import base64
 import math
 from dotenv import load_dotenv
 
+
 ##################################### project modules ###################################   
 # 현재 모듈 파일의 디렉터리 경로를 가져옴
 module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,7 @@ sys.path.append(RECOMMEND_SYS_PATH)
 from recommend.func.tmap_client import TMAPClient
 from recommend.func.place_data_manager import PlaceDataManager
 from recommend.func.route_optimizer import RouteOptimizer
+from recommend.func.tools import *
 from func import search
 #########################################################################################
 
@@ -202,18 +204,6 @@ def recommend_page():
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
 
-            # # old 
-            # data = route_optimizer.get_top_k_routes(
-            #     start_place=st.session_state['origin'],
-            #     end_place=st.session_state['origin'],
-            #     selected_region=st.session_state["selected_sigungu"],
-            #     selected_festival_place=st.session_state["dest_addr"],
-            #     comb=2,
-            #     comb_k=5,
-            #     topk=3
-            # )
-
-            # new @241113
             data = route_optimizer.get_top_k_routes_tsp(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
@@ -305,8 +295,27 @@ def recommend_page():
     # Folium 지도 출력
     st_folium(st.session_state.m, width=700, height=500)
 
-    # 선택된 경로에 대한 정보 표시
+    
+    ############################# 선택된 경로에 대한 정보 표시  #############################
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
+
+    # # 경로 정보 (거리, 시간, 요금) 출력
+    st.write(f"- 이동 거리: {selected_route['properties']['totalDistance'] / 1e3}km")
+    st.write(f"- 이동 소요 시간: {format_time(selected_route['properties']['totalTime'])}")
+    st.write(f"- 비용: {selected_route['properties']['totalFare']}원")
+
+    st.markdown(f"---")
+
+    # st.markdown(f"""
+    #     <div style="padding-left: 20px;">
+    #         이동 거리: {round(selected_route['properties']['totalDistance'] / 1e3, 2)}km  
+    #         <br>
+    #         이동 소요 시간: {format_time(selected_route['properties']['totalTime'])}  
+    #         <br>
+    #         비용: {selected_route['properties']['totalFare']}원
+    #     </div>
+    #     """, unsafe_allow_html=True)
+    
     for order, point in enumerate(selected_route['points']):
         if order == 0 :
             point_type = '출발지'
