@@ -60,7 +60,7 @@ def search_page():
     # 사용자 입력
     c1, c2 = st.columns([1, 4])
     with c1:
-        st.session_state['origin'] = st.text_input("", key="origin_input")
+        st.session_state['origin'] = st.text_input("", key="origin_input", value='대전 서구 월평동 1216', )
 
     with c2:
         st.markdown(space_html, unsafe_allow_html=True)
@@ -68,7 +68,7 @@ def search_page():
 
     c1, c2 = st.columns([1, 4])
     with c1:
-        search_input = st.text_input("", key="destination_input").split()
+        search_input = st.text_input("", key="destination_input", value='부여 백제문화제').split()
         if search_input:
             st.session_state["selected_sigungu"] = search_input[0]
             st.session_state["search_query"] = search_input[1:]
@@ -82,7 +82,8 @@ def search_page():
         st.session_state['page'] = 'select'
         st.rerun()
     
-    st.warning("본 버전은 데모 버전입니다. '대전 서구 월평동 1216'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
+    # st.warning(f"본 버전은 데모 버전으로,  \n'대전 서구 월평동 1216'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
+    
 
 def select_page():
     global closest_location
@@ -280,7 +281,7 @@ def recommend_page():
     
 
     # 선택된 경로의 각 점에 마커 추가 (index 값을 기준으로 정렬하여 표시)
-    for order, point in sorted(enumerate(route_points), key=lambda x: x[1].get('index', x[0])):
+    for order, point in sorted(enumerate(route_points[:-1]), key=lambda x: x[1].get('index', x[0])):
         print(point['pointName'], point['pointId'], order+1)
         folium.Marker(
             location=(point['pointLatitude'], point['pointLongitude']),
