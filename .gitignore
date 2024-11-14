@@ -8,6 +8,8 @@
 !sample_optimized_route.json
 !sample_top3_optimized_routes.json
 !top_routes.json
+!places_for_tsp_blueprint.json
+!tsp_top_routes.json
 *.xlsx
 *.zip
 .DS_Store

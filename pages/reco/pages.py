@@ -1,6 +1,14 @@
 import os
 import sys
+import streamlit as st
+import folium
+from streamlit_folium import st_folium
+import base64
+import math
+from dotenv import load_dotenv
 
+
+##################################### project modules ###################################   
 # 현재 모듈 파일의 디렉터리 경로를 가져옴
 module_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,30 +19,23 @@ sys.path.append(PROJECT_ROOT_PATH)
 RECOMMEND_SYS_PATH = os.path.join(module_dir, '../../recommend')
 sys.path.append(RECOMMEND_SYS_PATH)
 
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
-from recommend.func.tmap_route_optimizer import TMAPClient, PlaceDataManager, RouteOptimizer
+from recommend.func.tmap_client import TMAPClient
+from recommend.func.place_data_manager import PlaceDataManager
+from recommend.func.route_optimizer import RouteOptimizer
+from recommend.func.tools import *
+from func import search
+#########################################################################################
 
-from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv('SK_OPEN_API_KEY')
+
+################################ route optimizer instances ##############################
 tmap_client = TMAPClient(api_key)
-place_data_manager = PlaceDataManager(data_path="추천장소통합리스트.csv")
+place_data_manager = PlaceDataManager(file_name="추천장소통합리스트.csv")
 route_optimizer = RouteOptimizer(tmap_client, place_data_manager)
+#########################################################################################
 
-
-from collections import defaultdict 
-
-# from importlib import reload
-from func import search
-
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
-
-import streamlit as st
-import base64
-
-import math
+DEBUG = True
 
 def calculate_distance(coord1, coord2):
     # 유클리드 거리 계산
@@ -48,7 +49,6 @@ def load_image(image_file):
 closest_location = 'OD'
 # PIN_IMG = r"./pages/reco/img/location-pin.png"
 PIN_IMG = os.path.join(module_dir, 'img', 'location-pin.png')
-DEBUG = True
 
 loc_base64 = load_image(PIN_IMG)
 
@@ -82,7 +82,7 @@ def search_page():
         st.session_state['page'] = 'select'
         st.rerun()
     
-    st.warning("본 버전은 데모 버전입니다. '대전 덕명동 515-3'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
+    st.warning("본 버전은 데모 버전입니다. '대전 서구 월평동 1216'에서 '부여 백제문화제'로 가는 경로만 탐색 가능합니다.", icon="⚠️")
 
 def select_page():
     global closest_location
@@ -186,8 +186,6 @@ def select_page():
                 st.write("먼저 장소를 선택해주세요.")
 
 
-# from recommend.func.TMAP_API import get_my_topk_optimized_routes
-
 def recommend_page():
     # 페이지 제목
     st.title("이렇게 가볼까요?")
@@ -199,26 +197,15 @@ def recommend_page():
     import json
     if DEBUG:
         # sample_file_name = 'sample_top3_optimized_routes.json'
-        sample_file_name = 'top_routes.json'
+        sample_file_name = 'tsp_top_routes.json'
         sample_data_path = os.path.join(RECOMMEND_SYS_PATH, 'data', sample_file_name)
-        with open(sample_data_path, 'r') as f:
+        with open(sample_data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
     else:
         if len(st.session_state['route']) == 0:
             print(st.session_state["selected_sigungu"], st.session_state["dest_addr"],)
 
-            # # func.TMAP_API.get_my_topk_optimized_routes
-            # data = get_my_topk_optimized_routes(
-            #     start_place=st.session_state['origin'],
-            #     end_place=st.session_state['origin'],
-            #     selected_region=st.session_state["selected_sigungu"],
-            #     selected_festival_place=st.session_state["dest_addr"],
-            #     comb=2,
-            #     comb_k=5,
-            #     topk=3
-            # )
-
-            data = route_optimizer.get_top_k_routes(
+            data = route_optimizer.get_top_k_routes_tsp(
                 start_place=st.session_state['origin'],
                 end_place=st.session_state['origin'],
                 selected_region=st.session_state["selected_sigungu"],
@@ -227,6 +214,7 @@ def recommend_page():
                 comb_k=5,
                 topk=3
             )
+            
             with open(r'..\recommend\data\my_route_sample2.json', 'w') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
     st.session_state['route'] = data
@@ -252,7 +240,11 @@ def recommend_page():
 
     selected_route = st.session_state['route'][selected_route_index]
     route_points = selected_route['points']
+
+    # 장소 좌표 (출발지 - (축제장소, 추천장소) - 도착지(출발지)) 
     points_coordinates = [(point['pointLatitude'], point['pointLongitude']) for point in route_points]
+
+    # 경로 시각화를 위한 좌표 추출
     line_coordinates = [(coord[1], coord[0]) for coord in selected_route['lineCoordinates']]
     color = colors[selected_route_index % len(colors)]
 
@@ -287,8 +279,9 @@ def recommend_page():
         st.warning("유효한 경로 좌표가 없습니다.")
     
 
-    # 선택된 경로의 각 점에 마커 추가
-    for order, point in enumerate(route_points):
+    # 선택된 경로의 각 점에 마커 추가 (index 값을 기준으로 정렬하여 표시)
+    for order, point in sorted(enumerate(route_points), key=lambda x: x[1].get('index', x[0])):
+        print(point['pointName'], point['pointId'], order+1)
         folium.Marker(
             location=(point['pointLatitude'], point['pointLongitude']),
             icon=folium.DivIcon(
@@ -304,7 +297,23 @@ def recommend_page():
     # Folium 지도 출력
     st_folium(st.session_state.m, width=700, height=500)
 
-    # 선택된 경로에 대한 정보 표시
+    
+    ############################# 선택된 경로에 대한 정보 표시  #############################
     st.subheader(f"선택한 경로: {selected_route_index + 1}")
-    for order, point in enumerate(selected_route['points']):
-        st.write(f"{order + 1}. {point['pointName']}")
+
+    # # 경로 정보 (거리, 시간, 요금) 출력
+    st.write(f"- 총 이동 거리 :  {round(selected_route['properties']['totalDistance'] / 1e3, 2)} km")
+    st.write(f"- 총 이동 시간 :  {format_time(selected_route['properties']['totalTime'])}")
+    st.write(f"- 총 이동 비용 :  {selected_route['properties']['totalFare']} 원")
+
+    st.markdown(f"---")
+    
+    for order, point in enumerate(route_points):
+        if order == 0 :
+            point_type = '출발지'
+        elif order == len(selected_route['points'])-1:
+            point_type = '도착지'
+        else: 
+            point_type = '경유지'
+        
+        st.write(f"{order + 1}. {point_type}: {point['pointName']}")
