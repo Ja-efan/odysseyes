@@ -84,6 +84,6 @@ def format_time(total_seconds: int) -> str:
     if hours > 0:
         # print(f"")
         # print(total_minutes)
-        return f"{hours}시간 {minutes}분" if minutes > 0 else f"{hours}시간"
+        return f"{hours} 시간 {minutes} 분" if minutes > 0 else f"{hours} 시간"
     else:
-        return f"{minutes}분"
+        return f"{minutes} 분"
