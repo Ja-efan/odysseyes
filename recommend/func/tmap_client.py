@@ -35,7 +35,7 @@ class TMAPClient:
             json.JSONDecodeError: 응답이 JSON 형식이 아닐 경우 발생하는 예외.
         
         Example:
-            ```python
+            ```
             poi_data = get_poi(keyword="백제문화단지", region="서울")
             print(poi_data)
             # Output: {'latitude': '36.30662608', 'longitude': '126.90670093', 'name': '백제문화단지'}
